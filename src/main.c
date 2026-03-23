@@ -18,16 +18,9 @@ static void	handle_sigint(int signum unused)
 {
 	AUTO_LOG;
 	
-	LOG(YELLOW "signal %d received, stopping ping" RESET, signum);
+	// LOG(YELLOW "signal %d received, stopping ping" RESET, signum);
 	g_is_running = false;
 	return;
-}
-
-static void build_ping_packet(t_ping *ping unused)
-{
-	// create the ECHO_REQUEST header
-	populate_echo_request(ping);
-	return ;
 }
 
 static void	ping_loop(t_ping *ping)

@@ -12,6 +12,13 @@
 
 #include "../includes/ft_ping.h"
 
+void build_ping_packet(t_ping *ping)
+{
+	// create the ECHO_REQUEST header
+	populate_echo_request(ping);
+	return ;
+}
+
 uint16_t	calculate_checksum(uint16_t *addr, int count)
 {
 	AUTO_LOG;

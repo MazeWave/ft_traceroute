@@ -48,6 +48,18 @@
 #define bool int
 // END TO REMOVE LATER
 
+// From lpolizzi ft_ping
+# define SECOND_IN_USEC 1000000
+
+# define MAXSEQ 65535
+
+# define MAXIPLEN 60
+# define MAXICMPLEN 76
+
+# define PING_DEFAULT_DATA_LEN 56
+# define PING_MAX_DATA_LEN (65507 - MAXIPLEN - MAXICMPLEN)
+// end of lpolizzi ft_ping
+
 typedef struct	s_echo_header
 {
 	// First 32 bits
@@ -105,9 +117,10 @@ int		resolve_hostname(t_ping *ping);
 void	print_addr_info(t_ping *ping);
 void	print_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping);
 
-// echo_request.c
+// icmp_packet.c
 t_echo_header	init_echo_header(void);
 uint16_t		calculate_checksum(uint16_t *addr, int count);
 void			populate_echo_request(t_ping *ping);
+void 			build_ping_packet(t_ping *ping);
 
 #endif
