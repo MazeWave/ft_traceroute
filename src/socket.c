@@ -28,14 +28,16 @@ int	create_icmp_socket(t_ping *ping)
 
 	// Check if the socket was created successfully
 	if (ping->sockfd < 0)
-		return (close(ping->sockfd), printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, ping->program_name, ping->sockfd), EXIT_FAILURE);
+		return (close(ping->sockfd),
+				printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, ping->program_name, ping->sockfd),
+				EXIT_FAILURE);
 	return (EXIT_SUCCESS);
 }
 
 int	resolve_hostname(t_ping *ping)
 {
 	AUTO_LOG;
-	
+
 	struct addrinfo	hints;
 	struct addrinfo	*res;
 

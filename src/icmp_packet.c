@@ -64,9 +64,7 @@ void	add_payload_to_packet(t_ping *ping)
 		LOG(YELLOW "No payload provided" RESET);
 		return;
 	}
-	LOG(CYAN"TEST"RESET);
 	bzero(ping->icmp_packet.payload.data, (ping->payload_length / 4) + 1);
-	LOG(CYAN"TEST"RESET);
 
 	// Convert the raw string payload into the uint32_t array
 	for (uint32_t i = 0; i < ping->payload_length; i++)
@@ -75,9 +73,7 @@ void	add_payload_to_packet(t_ping *ping)
 		{
 			if (i > ping->payload_length)
 				break;
-			LOG(RED"TEST"RESET);
 			ping->icmp_packet.payload.data[i / 4] |= ping->payload_raw_string[i] << (24 - (j * 8));
-			LOG(RED"TEST"RESET);
 			LOG("letter i: %d, offset j: %d, bitshift: %d", i, j, (24 - (j * 8)));
 			LOG("added char: %c", ping->payload_raw_string[i]);
 			i++;
