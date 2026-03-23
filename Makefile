@@ -17,7 +17,7 @@ SRC		=	src/main.c \
 			src/log.c \
 			src/parser.c \
 			src/socket.c \
-			src/echo_header.c \
+			src/icmp_packet.c \
 
 OBJS	=	$(SRC:.c=.o)
 

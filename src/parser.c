@@ -87,12 +87,12 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->is_bonus = (strstr(argv[0], "ft_ping_bonus") == NULL) ? false : true;
 	ping->is_root = (getuid() == 0);
 	ping->hostname = NULL;
-	ping->payload = NULL;
+	// ping->payload = NULL;
 	ping->ip_str = NULL;
 	ping->addr_info = NULL;
-	ping->echo_request = init_echo_header(ICMP_ECHO);
+	ping->icmp_packet.header = init_echo_header();
 	ping->interval = 1;
-	ping->payload_length = 0;
+	// ping->payload_length = 0;
 	ping->ip = 0;
 	ping->count = -1;
 }

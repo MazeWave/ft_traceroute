@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/colors.h"
 #include "../includes/log.h"
 
 static int	depth = 0;

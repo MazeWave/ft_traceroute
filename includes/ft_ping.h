@@ -58,15 +58,25 @@ typedef struct	s_echo_header
 	// Second 32 bits
 	uint16_t	identifier;
 	uint16_t	sequence_number;
-
-	// Payload (32 bits * x times needed)
-	uint32_t	*payload;
 }	t_echo_header;
+
+typedef struct	s_echo_payload	
+{
+	// Payload (32 bits * x times needed)
+	uint32_t	*data;
+	size_t		length;
+}	t_echo_payload;
+
+typedef struct s_icmp_packet
+{
+	t_echo_header	header;
+	t_echo_payload	payload;
+}	t_icmp_packet;
 
 typedef struct s_ping
 {
-	struct s_echo_header	echo_request;
-	struct s_echo_header	*echo_replies;
+	struct s_icmp_packet	icmp_packet;
+	// struct s_icmp_packet	*icmp_replies;
 	struct addrinfo			*addr_info;
 
 	bool		is_bonus;
@@ -76,7 +86,7 @@ typedef struct s_ping
 	char		*ip_str;
 	char		*payload_raw_string;
 	uint32_t	payload_length;
-	uint32_t	*payload;
+	// uint32_t	*payload;
 	uint32_t	ip;
 	int			count;
 	int			sockfd;
@@ -96,8 +106,8 @@ void	print_addr_info(t_ping *ping);
 void	print_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping);
 
 // echo_request.c
-t_echo_header	init_echo_header(size_t type);
-uint16_t		calculate_checksum(t_echo_header echo_header);
+t_echo_header	init_echo_header(void);
+uint16_t		calculate_checksum(uint16_t *addr, int count);
 void			populate_echo_request(t_ping *ping);
 
 #endif
