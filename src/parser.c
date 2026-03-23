@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 14:35:54 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/01/16 16:18:51 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/23 18:31:42 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,14 +87,15 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->is_bonus = (strstr(argv[0], "ft_ping_bonus") == NULL) ? false : true;
 	ping->is_root = (getuid() == 0);
 	ping->hostname = NULL;
-	// ping->payload = NULL;
 	ping->ip_str = NULL;
 	ping->addr_info = NULL;
-	ping->icmp_packet.header = init_echo_header();
 	ping->interval = 1;
-	// ping->payload_length = 0;
+	// ping->payload_length = PING_DEFAULT_DATA_LEN;
+	ping->payload_length = 0;
 	ping->ip = 0;
 	ping->count = -1;
+	
+	ping->icmp_packet.payload.data = NULL;
 }
 
 int parse_args(int argc, char **argv, t_ping *ping)

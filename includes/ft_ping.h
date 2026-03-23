@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:27:26 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/01/16 15:01:43 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/23 17:51:04 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 # include <stdlib.h>
 
 # include <arpa/inet.h>
-# include <errno.h>
 # include <fcntl.h>
 # include <limits.h>
 # include <math.h>
@@ -66,13 +65,13 @@ typedef struct	s_echo_header
 	uint8_t		type;
 	uint8_t		code;
 	uint16_t	checksum;
-	
+
 	// Second 32 bits
 	uint16_t	identifier;
 	uint16_t	sequence_number;
 }	t_echo_header;
 
-typedef struct	s_echo_payload	
+typedef struct	s_echo_payload
 {
 	// Payload (32 bits * x times needed)
 	uint32_t	*data;
@@ -98,7 +97,6 @@ typedef struct s_ping
 	char		*ip_str;
 	char		*payload_raw_string;
 	uint32_t	payload_length;
-	// uint32_t	*payload;
 	uint32_t	ip;
 	int			count;
 	int			sockfd;
@@ -118,9 +116,10 @@ void	print_addr_info(t_ping *ping);
 void	print_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping);
 
 // icmp_packet.c
-t_echo_header	init_echo_header(void);
-uint16_t		calculate_checksum(uint16_t *addr, int count);
-void			populate_echo_request(t_ping *ping);
-void 			build_ping_packet(t_ping *ping);
+uint16_t	calculate_checksum(uint16_t *addr, int count);
+void		init_echo_header(t_ping *ping);
+void		read_payload_data_in_packet(t_ping *ping);
+void 		build_ping_packet(t_ping *ping);
+void		add_payload_to_packet(t_ping *ping);
 
 #endif
