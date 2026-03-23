@@ -18,7 +18,7 @@ static void	handle_sigint(int signum unused)
 {
 	AUTO_LOG;
 	
-	// LOG(YELLOW "signal %d received, stopping ping" RESET, signum);
+	LOG(YELLOW "signal %d received, stopping ping" RESET, signum);
 	g_is_running = false;
 	return;
 }
