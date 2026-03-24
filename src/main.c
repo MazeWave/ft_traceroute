@@ -17,7 +17,7 @@ volatile bool	g_is_running = true;
 static void	handle_sigint(int signum unused)
 {
 	AUTO_LOG;
-	
+
 	LOG(YELLOW "signal %d received, stopping ping" RESET, signum);
 	g_is_running = false;
 	return;
@@ -29,16 +29,25 @@ static void	ping_loop(t_ping *ping)
 
 	signal(SIGINT, &handle_sigint);
 	signal(SIGQUIT, &handle_sigint);
+
+	// Preload option
+	for (int i = 0; i < ping->preload_count; i++)
+	{
+		build_ping_packet(ping);
+		send_ping(ping);
+	}
+
+	// Main ping loop
 	while (g_is_running)
 	{
 		// Account for count
-		if (ping->count == 0) break;
+		if (ping->count == 0 || ping->ttl == 0) break;
 		if (ping->count != -1) ping->count--;
 		LOG(YELLOW "pinging... count: %d" RESET, ping->count + 1);
 		// Build the ping packet
 		build_ping_packet(ping);
 		// Send the ping
-		// send_ping(ping);
+		send_ping(ping);
 		// Account for interval
 		usleep((size_t)(ping->interval * 1000000.0));
 	}
@@ -59,9 +68,8 @@ int	main(int argc, char **argv unused)
 	if (parse_args(argc, argv, ping) == EXIT_FAILURE) return (EXIT_FAILURE);
 	if (create_icmp_socket(ping) == EXIT_FAILURE) return (EXIT_FAILURE);
 	if (resolve_hostname(ping) == EXIT_FAILURE) return (EXIT_FAILURE);
-	
+
 	ping_loop(ping);
-	print_ping_struct(ping);
 	close(ping->sockfd);
 	return (0);
 }

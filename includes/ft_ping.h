@@ -55,9 +55,11 @@
 # define MAXIPLEN 60
 # define MAXICMPLEN 76
 
-# define PING_DEFAULT_DATA_LEN 56
+# define PING_DEFAULT_DATA_LEN 56 // Can be found in the man page of ping
 # define PING_MAX_DATA_LEN (65507 - MAXIPLEN - MAXICMPLEN)
 // end of lpolizzi ft_ping
+
+extern volatile bool	g_is_running;
 
 typedef struct	s_echo_header
 {
@@ -92,13 +94,17 @@ typedef struct s_ping
 
 	bool		is_bonus;
 	bool		is_root;
+	bool		is_flooding;
 	char		*program_name;
 	char		*hostname;
 	char		*ip_str;
 	char		*payload_raw_string;
 	uint32_t	payload_length;
 	uint32_t	ip;
+	uint8_t		ttl;
 	int			count;
+	int			preload_count;
+	int			timeout;
 	int			sockfd;
 	float		interval;
 }	t_ping;
@@ -108,12 +114,14 @@ int		parse_args(int argc, char **argv, t_ping *ping);
 void	help(char *elf_name);
 void	init_ping_struct(t_ping *ping, char **argv);
 void	print_ping_struct(t_ping *ping);
+void	print_packet_informations(t_ping *ping);
 
 // socket.c
 int		create_icmp_socket(t_ping *ping);
 int		resolve_hostname(t_ping *ping);
 void	print_addr_info(t_ping *ping);
 void	print_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping);
+void	send_ping(t_ping *ping);
 
 // icmp_packet.c
 uint16_t	calculate_checksum(uint16_t *addr, int count);

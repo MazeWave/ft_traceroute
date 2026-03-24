@@ -12,6 +12,23 @@
 
 #include "../includes/ft_ping.h"
 
+void	print_packet_informations(t_ping *ping)
+{
+	AUTO_LOG;
+	
+	LOG(CYAN "[HEADER]" RESET);
+	LOG(BLUE "Packet sequence: %d" RESET, ping->icmp_packet.header.sequence_number);
+	LOG(BLUE "Type: %d" RESET, ping->icmp_packet.header.type);
+	LOG(BLUE "Code: %d" RESET, ping->icmp_packet.header.code);
+	LOG(CYAN "Checksum: %d" RESET, ping->icmp_packet.header.checksum);
+	LOG(CYAN "Identifier: %d" RESET, ping->icmp_packet.header.identifier);
+	LOG(BLUE "[PAYLOAD]" RESET);
+	LOG(BLUE "Lenght: %d" RESET, ping->icmp_packet.payload.length);
+	for (uint32_t i = 0; i < ping->icmp_packet.payload.length / 4 + 1; i++)
+		LOG(BLUE "Data %d: \"%d\"" RESET, i, ping->icmp_packet.payload.data[i]);
+	return ;
+}
+
 void    print_ping_struct(t_ping *ping)
 {
 	AUTO_LOG;
@@ -86,10 +103,14 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->program_name = argv[0];
 	ping->is_bonus = (strstr(argv[0], "ft_ping_bonus") == NULL) ? false : true;
 	ping->is_root = (getuid() == 0);
+	ping->is_flooding = false;
 	ping->hostname = NULL;
 	ping->ip_str = NULL;
 	ping->addr_info = NULL;
 	ping->interval = 1;
+	ping->timeout = 0;
+	ping->ttl = 64;
+	ping->preload_count = 0;
 	// ping->payload_length = PING_DEFAULT_DATA_LEN;
 	ping->payload_length = 0;
 	ping->ip = 0;
@@ -107,7 +128,7 @@ int parse_args(int argc, char **argv, t_ping *ping)
 	while (optind < argc)
 	{
 		// Checks for options
-		while ((opt = getopt(argc, argv, "?hvc:i:p:t:")) != -1)
+		while ((opt = getopt(argc, argv, "?wlhfvVc:i:p:t:")) != -1)
 		{
 			switch (opt)
 			{
@@ -130,9 +151,25 @@ int parse_args(int argc, char **argv, t_ping *ping)
 					ping->payload_raw_string = optarg;
 					break;
 				case 't':
-					ping->interval = atof(optarg);
+					ping->ttl = atoi(optarg);
+					if (ping->ttl <= 0 || ping->ttl > 255)
+						return (LOG(RED "Error: Time To Live (TTL) must be between 1 and 255" RESET), help(argv[0]), EXIT_FAILURE);
 					break;
-				case 'v':
+				case 'w':
+					ping->timeout = atoi(optarg);
+					break;
+				case 'f':
+					if (!ping->is_root) return (LOG(RED "Error: Flooding require root privileges" RESET), help(argv[0]), EXIT_FAILURE);
+					ping->is_flooding = true;
+					break;
+				case 'l':
+					ping->preload_count = atoi(optarg);
+					if (ping->preload_count > 3 && !ping->is_root)
+						return (LOG(RED "Error: Preload option requires root privileges" RESET), help(argv[0]), EXIT_FAILURE);
+					break;
+				case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging multicast address.
+					return (version(), EXIT_FAILURE);
+				case 'V':
 					return (version(), EXIT_FAILURE);
 				case 'h':
 					return (help(argv[0]), EXIT_FAILURE);

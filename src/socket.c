@@ -12,6 +12,18 @@
 
 #include "../includes/ft_ping.h"
 
+void	send_ping(t_ping *ping)
+{
+	AUTO_LOG;
+
+	if (sendto(ping->sockfd, &ping->icmp_packet, sizeof(ping->icmp_packet), 0, ping->addr_info->ai_addr, ping->addr_info->ai_addrlen) <= 0)
+	{
+		printf(RED "%s: sendto: Failed to send ping packet.\n" RESET, ping->program_name);
+		g_is_running = false;
+	}
+	return ;
+}
+
 int	create_icmp_socket(t_ping *ping)
 {
 	AUTO_LOG;
