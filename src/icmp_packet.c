@@ -20,79 +20,40 @@ void	deserialize_icmp_packet(t_ping *ping)
 {
 	AUTO_LOG;
 
-	size_t		buffer_size = 0;
+	size_t		offset = (ping->is_root) ? 20 : 0;
+	size_t		buffer_size = ping->packet_len + offset;
 	void		*buffer = NULL;
-	t_replies	*temp = ping->replies;
+	t_replies	*new_reply_node = NULL;
+	t_replies	**tail = &ping->replies;
+	
+	buffer = calloc(buffer_size, 1);
+	if (!buffer)
+	{
+		printf(RED "%s: malloc: Failed to allocate memory for ICMP packet buffer.\n" RESET, ping->program_name);
+		g_is_running = false;
+		return ;
+	}
+	if (recv(ping->sockfd, buffer, buffer_size, 0) < 0)
+	{
+		free(buffer);
+		printf(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, ping->program_name);
+		return ;
+	}
+	
+	// Traverse the linked list to find the last node
+	while (*tail)
+		tail = &(*tail)->next;
+	new_reply_node = calloc(sizeof(t_replies), 1);
+	if (!new_reply_node)
+	{
+		printf(RED "%s: malloc: Failed to allocate memory for echo reply.\n" RESET, ping->program_name);
+		g_is_running = false;
+		free(buffer);
+		return ;
+	}
+	new_reply_node->reply = *((t_icmp_header *)(buffer + offset));
+	*tail = new_reply_node;
 }
-
-// void	deserialize_icmp_packet(t_ping *ping)
-// {
-// 	AUTO_LOG;
-
-// 	size_t		buffer_size = 0;
-// 	void		*buffer = NULL;
-// 	t_replies	*temp = ping->replies;
-
-// 	// Create our custom linked list to store the echo replies if needed
-// 	if (!ping->replies)
-// 	{
-// 		ping->replies = calloc(sizeof(t_replies), 1);
-// 		if (!ping->replies)
-// 		{
-// 			printf(RED "%s: malloc: Failed to allocate memory for echo replies linked list.\n" RESET, ping->program_name);
-// 			g_is_running = false;
-// 			return ;
-// 		}
-// 	}
-
-// 	// Allocate a buffer to receive the packet
-// 	// SOCK_RAW : IP Header + ICMP Header + Payload (+20 bytes for the IP header)
-// 	// SOCK_DGRAM : ICMP Header + Payload
-// 	buffer_size = (ping->is_root) ? ping->packet_len + 20 : ping->packet_len;
-// 	buffer = calloc(buffer_size, 1);
-// 	if (!buffer)
-// 	{
-// 		printf(RED "%s: malloc: Failed to allocate memory for ICMP packet buffer.\n" RESET, ping->program_name);
-// 		g_is_running = false;
-// 		return ;
-// 	}
-
-// 	// Receive the packet
-// 	if (recv(ping->sockfd, buffer, buffer_size, 0) < 0)
-// 	{
-// 		free(buffer);
-// 		printf(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, ping->program_name);
-// 		return ;
-// 	}
-
-// 	// Go to last node of the linked list
-// 	while (temp->next)
-// 		temp = temp->next;
-// 	temp = temp->next;
-// 	// Allocate memory for the reply
-// 	temp = calloc(sizeof(t_replies), 1);
-// 	if (!temp)
-// 	{
-// 		printf(RED "%s: malloc: Failed to allocate memory for echo reply.\n" RESET, ping->program_name);
-// 		g_is_running = false;
-// 		free(buffer);
-// 		return ;
-// 	}
-// 	temp->next = NULL;
-
-// 	// Deserialization step
-// 	temp->reply = calloc(sizeof(t_icmp_header), 1);
-// 	if (!temp->reply)
-// 	{
-// 		printf(RED "%s: malloc: Failed to allocate memory for echo reply header.\n" RESET, ping->program_name);
-// 		g_is_running = false;
-// 		free(buffer);
-// 		return ;
-// 	}
-// 	*temp->reply = *((t_icmp_header *)(buffer + ((ping->is_root) ? 20 : 0)));
-// 	free(buffer);
-// 	return ;
-// }
 
 void	serialize_icmp_packet(t_ping *ping)
 {
