@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:27:26 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 17:32:42 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:46:41 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,18 +61,6 @@
 
 extern volatile bool	g_is_running;
 
-// typedef struct	s_echo_header
-// {
-// 	// First 32 bits (8 + 8 + 16)
-// 	uint8_t		type;
-// 	uint8_t		code;
-// 	uint16_t	checksum;
-
-// 	// Second 32 bits (16 + 16)
-// 	uint16_t	identifier;
-// 	uint16_t	sequence_number;
-// }	t_echo_header;
-
 typedef struct	s_icmp_header
 {
 	// struct s_echo_header	header;
@@ -89,15 +77,15 @@ typedef struct	s_icmp_header
 
 typedef struct s_replies
 {
-	struct s_icmp_header	*reply; 
+	struct s_icmp_header	reply; 
 	struct s_replies		*next;
 }	t_replies;
 
 typedef struct	s_ping
 {
 	struct s_icmp_header	icmp_packet;
-	// struct s_icmp_packet	*icmp_replies;
 	struct addrinfo			*addr_info;
+	struct s_replies		*replies;
 
 	bool		is_bonus;
 	bool		is_root;
@@ -118,7 +106,6 @@ typedef struct	s_ping
 	uint8_t		*packet;
 	size_t		packet_len;
 	
-	void		*replies;
 }	t_ping;
 
 // parser.c
