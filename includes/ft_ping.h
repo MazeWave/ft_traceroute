@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:27:26 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 14:37:21 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 17:32:42 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,34 +61,41 @@
 
 extern volatile bool	g_is_running;
 
-typedef struct	s_echo_header
+// typedef struct	s_echo_header
+// {
+// 	// First 32 bits (8 + 8 + 16)
+// 	uint8_t		type;
+// 	uint8_t		code;
+// 	uint16_t	checksum;
+
+// 	// Second 32 bits (16 + 16)
+// 	uint16_t	identifier;
+// 	uint16_t	sequence_number;
+// }	t_echo_header;
+
+typedef struct	s_icmp_header
 {
-	// First 32 bits
+	// struct s_echo_header	header;
+	
+	// First 32 bits (8 + 8 + 16)
 	uint8_t		type;
 	uint8_t		code;
 	uint16_t	checksum;
 
-	// Second 32 bits
+	// Second 32 bits (16 + 16)
 	uint16_t	identifier;
 	uint16_t	sequence_number;
-}	t_echo_header;
+}	t_icmp_header;
 
-// typedef struct	s_echo_payload
-// {
-// 	// Payload (32 bits * x times needed)
-// 	uint32_t	*data;
-// 	size_t		length;
-// }	t_echo_payload;
-
-typedef struct s_icmp_packet
+typedef struct s_replies
 {
-	t_echo_header	header;
-	// t_echo_payload	payload;
-}	t_icmp_packet;
+	struct s_icmp_header	*reply; 
+	struct s_replies		*next;
+}	t_replies;
 
-typedef struct s_ping
+typedef struct	s_ping
 {
-	struct s_icmp_packet	icmp_packet;
+	struct s_icmp_header	icmp_packet;
 	// struct s_icmp_packet	*icmp_replies;
 	struct addrinfo			*addr_info;
 
@@ -110,6 +117,8 @@ typedef struct s_ping
 	
 	uint8_t		*packet;
 	size_t		packet_len;
+	
+	void		*replies;
 }	t_ping;
 
 // parser.c
@@ -134,5 +143,6 @@ void		read_payload_data_in_packet(t_ping *ping);
 void 		build_ping_packet(t_ping *ping);
 void		add_payload_to_packet(t_ping *ping);
 void		serialize_icmp_packet(t_ping *ping);
+void		deserialize_icmp_packet(t_ping *ping);
 
 #endif
