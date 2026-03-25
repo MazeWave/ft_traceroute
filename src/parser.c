@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 14:35:54 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/23 18:31:42 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:57:58 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,9 @@ void	print_packet_informations(t_ping *ping)
 	LOG(CYAN "Checksum: %d" RESET, ping->icmp_packet.header.checksum);
 	LOG(CYAN "Identifier: %d" RESET, ping->icmp_packet.header.identifier);
 	LOG(BLUE "[PAYLOAD]" RESET);
-	LOG(BLUE "Lenght: %d" RESET, ping->icmp_packet.payload.length);
-	for (uint32_t i = 0; i < ping->icmp_packet.payload.length / 4 + 1; i++)
-		LOG(BLUE "Data %d: \"%d\"" RESET, i, ping->icmp_packet.payload.data[i]);
+	// LOG(BLUE "Lenght: %d" RESET, ping->icmp_packet.payload.length);
+	// for (uint32_t i = 0; i < ping->icmp_packet.payload.length / 4 + 1; i++)
+	// 	LOG(BLUE "Data %d: \"%d\"" RESET, i, ping->icmp_packet.payload.data[i]);
 	return ;
 }
 
@@ -116,7 +116,8 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->ip = 0;
 	ping->count = -1;
 	
-	ping->icmp_packet.payload.data = NULL;
+	ping->packet = NULL;
+	ping->packet_len = 0;
 }
 
 int parse_args(int argc, char **argv, t_ping *ping)
@@ -149,6 +150,7 @@ int parse_args(int argc, char **argv, t_ping *ping)
 					// 	return (LOG(RED "Error: Pattern cannot be empty" RESET), help(argv[0]), EXIT_FAILURE);
 					ping->payload_length = strlen(optarg);
 					ping->payload_raw_string = optarg;
+					ping->packet_len = (sizeof(t_echo_header)) + ping->payload_length;
 					break;
 				case 't':
 					ping->ttl = atoi(optarg);

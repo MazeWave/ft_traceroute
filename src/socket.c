@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/12 15:22:23 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/01/15 15:09:30 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 14:02:49 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,14 @@ void	send_ping(t_ping *ping)
 {
 	AUTO_LOG;
 
-	if (sendto(ping->sockfd, &ping->icmp_packet, sizeof(ping->icmp_packet), 0, ping->addr_info->ai_addr, ping->addr_info->ai_addrlen) <= 0)
+	if (sendto(ping->sockfd, ping->packet, ping->packet_len, 0, ping->addr_info->ai_addr, ping->addr_info->ai_addrlen) <= 0)
 	{
 		printf(RED "%s: sendto: Failed to send ping packet.\n" RESET, ping->program_name);
 		g_is_running = false;
 	}
+
+	free(ping->packet);
+	ping->packet = NULL;
 	return ;
 }
 

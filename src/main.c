@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/01/15 18:06:42 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 14:03:11 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ static void	ping_loop(t_ping *ping)
 		LOG(YELLOW "pinging... count: %d" RESET, ping->count + 1);
 		// Build the ping packet
 		build_ping_packet(ping);
+		if (!g_is_running) break;
 		// Send the ping
 		send_ping(ping);
 		// Account for interval
