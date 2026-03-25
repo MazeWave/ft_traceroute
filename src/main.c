@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/03/25 14:56:00 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 18:37:19 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,16 +44,24 @@ static void	ping_loop(t_ping *ping)
 		if (ping->count == 0 || ping->ttl == 0) break;
 		if (ping->count != -1) ping->count--;
 		LOG(YELLOW "pinging... count: %d" RESET, ping->count + 1);
+
 		// Build the ping packet
 		build_ping_packet(ping);
 		if (!g_is_running) break;
+
 		// Send the ping
+		struct timeval	start, end;
+		gettimeofday(&start, NULL);
 		send_ping(ping);
 		
 		// Listen to the echo replay
-		recv(ping->sockfd, ping->packet, ping->packet_len, 0);
+		deserialize_icmp_packet(ping);
+
 		// Account for interval
-		usleep((size_t)(ping->interval * 1000000.0));
+		gettimeofday(&end, NULL);
+		uint64_t	elapsed_usec = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);                                                                                                                                 
+		uint64_t	remaining = (ping->interval * 1000000.0) - elapsed_usec;
+		if (remaining > 0) usleep(remaining);
 	}
 	return;
 }

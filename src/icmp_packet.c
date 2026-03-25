@@ -25,28 +25,29 @@ void	deserialize_icmp_packet(t_ping *ping)
 	void		*buffer = NULL;
 	t_replies	*new_reply_node = NULL;
 	t_replies	**tail = &ping->replies;
-	
+
+	// Listen for the echo reply
 	buffer = calloc(buffer_size, 1);
 	if (!buffer)
 	{
-		printf(RED "%s: malloc: Failed to allocate memory for ICMP packet buffer.\n" RESET, ping->program_name);
+		LOG(RED "%s: malloc: Failed to allocate memory for ICMP packet buffer.\n" RESET, ping->program_name);
 		g_is_running = false;
 		return ;
 	}
 	if (recv(ping->sockfd, buffer, buffer_size, 0) < 0)
 	{
 		free(buffer);
-		printf(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, ping->program_name);
+		LOG(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, ping->program_name);
 		return ;
 	}
-	
+
 	// Traverse the linked list to find the last node
 	while (*tail)
 		tail = &(*tail)->next;
 	new_reply_node = calloc(sizeof(t_replies), 1);
 	if (!new_reply_node)
 	{
-		printf(RED "%s: malloc: Failed to allocate memory for echo reply.\n" RESET, ping->program_name);
+		LOG(RED "%s: malloc: Failed to allocate memory for echo reply.\n" RESET, ping->program_name);
 		g_is_running = false;
 		free(buffer);
 		return ;
@@ -67,26 +68,24 @@ void	serialize_icmp_packet(t_ping *ping)
 	ping->packet = calloc(ping->packet_len, sizeof(uint8_t));
 	if (!ping->packet)
 	{
-		printf(RED "%s: malloc: Failed to allocate memory for ping packet.\n" RESET, ping->program_name);
+		LOG(RED "%s: malloc: Failed to allocate memory for ping packet.\n" RESET, ping->program_name);
 		g_is_running = false;
 		return ;
 	}
 
-	// Serialize step
-	print_bits(ping->packet[0]);
+	// Serialize icmp header
 	while (i < sizeof(ping->icmp_packet))
 	{
 	    ping->packet[i] = *((uint8_t *)buf);
 	    buf++;
 	    i++;
 	}
-
+	// Serialize payload data
 	while (i < len)
 	{
 	    ping->packet[i] = payload_data[i - sizeof(ping->icmp_packet)];
 	    i++;
 	}
-	print_bits(ping->packet[0]);
 	return ;
 }
 
@@ -98,8 +97,8 @@ void	build_ping_packet(t_ping *ping)
 	serialize_icmp_packet(ping);
 	if (!ping->packet) return ;
 	ping->icmp_packet.checksum = calculate_checksum((uint16_t *)ping->packet, ping->packet_len);
-	*(uint16_t *)&ping->packet[2] = ping->icmp_packet.checksum; // this writes both the packet[2] and packet[3]
-	*(uint16_t *)&ping->packet[4] = ping->icmp_packet.identifier; // this writes both the packet[4] and packet[5]
+	*(uint16_t *)&ping->packet[2] = ping->icmp_packet.checksum;		// this writes both the packet[2] and packet[3]
+	// *(uint16_t *)&ping->packet[4] = ping->icmp_packet.identifier;	// this writes both the packet[4] and packet[5]
 	return ;
 }
 

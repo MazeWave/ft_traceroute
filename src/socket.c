@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/12 15:22:23 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 14:02:49 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 18:2929:1010 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,12 @@ int	create_icmp_socket(t_ping *ping)
 		return (close(ping->sockfd),
 				printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, ping->program_name, ping->sockfd),
 				EXIT_FAILURE);
+	
+	// Set the socket timeout for receiving packets and being non-blocking
+	struct timeval	tv;
+	tv.tv_sec = ping->interval;
+	tv.tv_usec = (ping->interval - tv.tv_sec) * 1000000.0;
+	setsockopt(ping->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 	return (EXIT_SUCCESS);
 }
 
