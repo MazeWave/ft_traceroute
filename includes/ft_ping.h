@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:27:26 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 17:46:41 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 1818:4242:3030 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,7 @@ typedef struct	s_ping
 	uint32_t	payload_length;
 	uint32_t	ip;
 	uint8_t		ttl;
+	int			sequence;
 	int			count;
 	int			preload_count;
 	int			timeout;
@@ -125,7 +126,7 @@ void	send_ping(t_ping *ping);
 
 // icmp_packet.c
 uint16_t	calculate_checksum(void *addr, int count);
-void		init_echo_header(t_ping *ping);
+void		init_icmp_header(t_ping *ping);
 void		read_payload_data_in_packet(t_ping *ping);
 void 		build_ping_packet(t_ping *ping);
 void		add_payload_to_packet(t_ping *ping);

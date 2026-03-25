@@ -93,7 +93,7 @@ void	build_ping_packet(t_ping *ping)
 {
 	AUTO_LOG;
 
-	init_echo_header(ping);
+	init_icmp_header(ping);
 	serialize_icmp_packet(ping);
 	if (!ping->packet) return ;
 	ping->icmp_packet.checksum = calculate_checksum((uint16_t *)ping->packet, ping->packet_len);
@@ -128,7 +128,7 @@ uint16_t	calculate_checksum(void *addr, int count)
 	return ((uint16_t)(~sum));
 }
 
-void	init_echo_header(t_ping *ping)
+void	init_icmp_header(t_ping *ping)
 {
 	AUTO_LOG;
 
