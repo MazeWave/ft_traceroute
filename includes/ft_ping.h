@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:27:26 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 14:02:53 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 14:37:21 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,6 +118,7 @@ void	help(char *elf_name);
 void	init_ping_struct(t_ping *ping, char **argv);
 void	print_ping_struct(t_ping *ping);
 void	print_packet_informations(t_ping *ping);
+void	print_bits(uint32_t n);
 
 // socket.c
 int		create_icmp_socket(t_ping *ping);
@@ -132,6 +133,6 @@ void		init_echo_header(t_ping *ping);
 void		read_payload_data_in_packet(t_ping *ping);
 void 		build_ping_packet(t_ping *ping);
 void		add_payload_to_packet(t_ping *ping);
-void		serialize_icmp_packet(t_ping *ping, size_t packet_len);
+void		serialize_icmp_packet(t_ping *ping);
 
 #endif

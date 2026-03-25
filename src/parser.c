@@ -6,11 +6,22 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 14:35:54 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 13:57:58 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 14:37:00 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/ft_ping.h"
+
+void	print_bits(uint32_t n)
+{
+	for (int i = 31; i >= 0; i--)
+	{
+		putchar((n >> i) & 1 ? '1' : '0');
+		if (i % 8 == 0)
+			putchar(' ');
+	}
+	putchar('\n');
+}
 
 void	print_packet_informations(t_ping *ping)
 {
@@ -97,6 +108,7 @@ void	version(void)
 	AUTO_LOG;
 	LOG(GREEN "ft_ping -- ldalmass -- version: 1.0.0" RESET);
 }
+
 void	init_ping_struct(t_ping *ping, char **argv)
 {
 	AUTO_LOG;
@@ -117,7 +129,7 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->count = -1;
 	
 	ping->packet = NULL;
-	ping->packet_len = 0;
+	ping->packet_len = sizeof(t_echo_header);
 }
 
 int parse_args(int argc, char **argv, t_ping *ping)
