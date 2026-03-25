@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/03/25 14:03:11 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 14:56:00 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,9 @@ static void	ping_loop(t_ping *ping)
 		if (!g_is_running) break;
 		// Send the ping
 		send_ping(ping);
+		
+		// Listen to the echo replay
+		recv(ping->sockfd, ping->packet, ping->packet_len, 0);
 		// Account for interval
 		usleep((size_t)(ping->interval * 1000000.0));
 	}

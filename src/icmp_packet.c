@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 15:09:13 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 14:53:31 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/03/25 15:03:21 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ void	build_ping_packet(t_ping *ping)
 	if (!ping->packet) return ;
 	ping->icmp_packet.header.checksum = calculate_checksum((uint16_t *)ping->packet, ping->packet_len);
 	*(uint16_t *)&ping->packet[2] = ping->icmp_packet.header.checksum; // this writes both the packet[2] and packet[3]
+	*(uint16_t *)&ping->packet[4] = ping->icmp_packet.header.identifier; // this writes both the packet[4] and packet[5]
 	return ;
 }
 
@@ -95,7 +96,7 @@ void	init_echo_header(t_ping *ping)
 	ping->icmp_packet.header.type = ICMP_ECHO;
 	ping->icmp_packet.header.code = 0;
 	ping->icmp_packet.header.checksum = 0;
-	ping->icmp_packet.header.identifier = 0;
+	ping->icmp_packet.header.identifier = getpid();
 	ping->icmp_packet.header.sequence_number = ping->count;
 
 	LOG(GREEN "Echo header initialized" RESET);
