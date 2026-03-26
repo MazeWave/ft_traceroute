@@ -12,6 +12,38 @@
 
 #include "../includes/ft_ping.h"
 
+void	print_echo_reply(t_ping *ping)
+{
+	AUTO_LOG;
+
+	t_replies	*reply = ping->replies;
+	while (reply->next)
+		reply = reply->next;
+
+	switch (ping->is_root)
+	{
+	case true:
+		printf(
+			GREEN "%u bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
+			reply->length,
+			ping->ip_str,
+			reply->reply.sequence_number,
+			reply->ttl,
+			reply->elapsed_time_in_ms
+		);
+		return ;
+	case false:
+		printf(
+			GREEN "%u bytes from %s: icmp_seq=%d time=%.3f ms\n" RESET,
+			reply->length,
+			ping->ip_str,
+			reply->reply.sequence_number,
+			reply->elapsed_time_in_ms
+		);
+		return ;
+	}
+}
+
 void	print_bits(uint32_t n)
 {
 	for (int i = 31; i >= 0; i--)
@@ -23,10 +55,10 @@ void	print_bits(uint32_t n)
 	putchar('\n');
 }
 
-void	print_packet_informations(t_ping *ping)
+void	print_packet_informations(t_ping *ping unused)
 {
 	AUTO_LOG;
-	
+
 	LOG(CYAN "[HEADER]" RESET);
 	LOG(BLUE "Packet sequence: %d" RESET, ping->icmp_packet.sequence_number);
 	LOG(BLUE "Type: %d" RESET, ping->icmp_packet.type);
@@ -34,13 +66,10 @@ void	print_packet_informations(t_ping *ping)
 	LOG(CYAN "Checksum: %d" RESET, ping->icmp_packet.checksum);
 	LOG(CYAN "Identifier: %d" RESET, ping->icmp_packet.identifier);
 	LOG(BLUE "[PAYLOAD]" RESET);
-	// LOG(BLUE "Lenght: %d" RESET, ping->icmp_packet.payload.length);
-	// for (uint32_t i = 0; i < ping->icmp_packet.payload.length / 4 + 1; i++)
-	// 	LOG(BLUE "Data %d: \"%d\"" RESET, i, ping->icmp_packet.payload.data[i]);
 	return ;
 }
 
-void    print_ping_struct(t_ping *ping)
+void    print_ping_struct(t_ping *ping unused)
 {
 	AUTO_LOG;
 	LOG(BLUE);
@@ -52,21 +81,29 @@ void    print_ping_struct(t_ping *ping)
 	LOG(RESET);
 }
 
-void	print_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping)
+void	get_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping)
 {
 	AUTO_LOG;
-	
+
 	char ip_str[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
-	
+
 	// set the ip
 	ping->ip = ai_addr->sin_addr.s_addr;
-	ping->ip_str = ip_str;
+	if (ping->ip_str) free(ping->ip_str);
+	ping->ip_str = strndup(ip_str, INET_ADDRSTRLEN);
+	if (!ping->ip_str)
+	{
+		LOG(RED "%s: malloc: Failed to allocate memory for ip string.\n" RESET, ping->program_name);
+		ping->ip_str = NULL;
+		return ;
+	}
 	LOG(GREEN "ip as int: %d" BLUE, ping->ip);
 	LOG(GREEN "ip as string: %s" BLUE, ip_str);
+	return ;
 }
 
-void	print_addr_info(t_ping *ping)
+void	find_the_ip(t_ping *ping)
 {
 	AUTO_LOG;
 
@@ -82,7 +119,7 @@ void	print_addr_info(t_ping *ping)
 		LOG("ai_protocol: %d", temp->ai_protocol);
 		LOG("ai_addrlen: %d", temp->ai_addrlen);
 		LOG("ai_addr: %p", temp->ai_addr);
-		print_sockaddr((struct sockaddr_in *)temp->ai_addr, ping);
+		get_sockaddr((struct sockaddr_in *)temp->ai_addr, ping);
 		LOG("ai_canonname: %s", temp->ai_canonname);
 		LOG(RESET);
 		temp = temp->ai_next;
@@ -93,7 +130,7 @@ void	help(char *elf_name)
 {
 	AUTO_LOG;
 	printf(GREEN "Usage: %s <hostname> [options]\n" RESET, elf_name);
-	
+
 	printf("Options:\n");
 	printf("  -c <count>    : Set the number of pings to send\n");
 	printf("  -i <interval> : Set the interval between pings\n");
@@ -127,7 +164,7 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->payload_length = 0;
 	ping->ip = 0;
 	ping->count = -1;
-	
+
 	ping->packet = NULL;
 	ping->packet_len = sizeof(t_icmp_header);
 }
@@ -199,7 +236,7 @@ int parse_args(int argc, char **argv, t_ping *ping)
 		else if (ping->hostname != NULL && argv[optind] != NULL)
 			return (LOG(RED "Error: Multiple hostnames provided" RESET), help(argv[0]), EXIT_FAILURE);
 	}
-	// Check if no hostname is provided 
+	// Check if no hostname is provided
 	if (ping->hostname == NULL)
 		return (LOG(RED "Error: No hostname provided" RESET), help(argv[0]), EXIT_FAILURE);
 	return (EXIT_SUCCESS);

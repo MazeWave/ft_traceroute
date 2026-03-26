@@ -54,12 +54,14 @@ uint16_t	calculate_checksum(void *addr, int count)
 void	init_icmp_header(t_ping *ping)
 {
 	AUTO_LOG;
+	
+	static	int	sequence_number = 0;
 
 	ping->icmp_packet.type = ICMP_ECHO;
 	ping->icmp_packet.code = 0;
 	ping->icmp_packet.checksum = 0;
 	ping->icmp_packet.identifier = getpid();
-	ping->icmp_packet.sequence_number = ping->count;
+	ping->icmp_packet.sequence_number = sequence_number++;
 
 	LOG(GREEN "Echo header initialized" RESET);
 	return ;

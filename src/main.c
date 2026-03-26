@@ -11,8 +11,47 @@
 /* ************************************************************************** */
 
 #include "../includes/ft_ping.h"
+#include <limits.h>
 
 volatile bool	g_is_running = true;
+
+static void	print_end_statistics(t_ping *ping)
+{
+	AUTO_LOG;
+
+	int			packets_received_count = 0;
+	t_replies	*temp = ping->replies;
+	float		round_trip_avg = 0.0;
+	float		round_trip_max = 0.0;
+	float		round_trip_min = INT_MAX;
+
+	while (temp)
+	{
+		packets_received_count++;
+		(round_trip_min > temp->elapsed_time_in_ms) ? round_trip_min = temp->elapsed_time_in_ms : round_trip_min;
+		(round_trip_max < temp->elapsed_time_in_ms) ? round_trip_max = temp->elapsed_time_in_ms : round_trip_max;
+		round_trip_avg += temp->elapsed_time_in_ms;
+		temp = temp->next;
+	}
+	if (packets_received_count > 0) round_trip_avg /= packets_received_count;
+	// else ; // todo : case no packet received
+
+	printf(YELLOW "\n--- %s ping statistics ---\n" RESET, ping->hostname);
+	printf(
+		YELLOW "%d packets transmitted, %d packets recieved, %d%% packet loss\n" RESET,
+		ping->count + 1,
+		packets_received_count,
+		(ping->count != -1) ? ((ping->count - packets_received_count) / 100) * 100 / (ping->count + 1) : 0
+	);
+	printf(
+		YELLOW "round-trip min/avg/max = %.2f/%.2f/%.2f ms\n" RESET,
+		round_trip_min,
+		round_trip_avg,
+		round_trip_max
+	);
+	
+	return ;
+}
 
 static void	handle_sigint(int signum unused)
 {
@@ -30,6 +69,12 @@ static void	ping_loop(t_ping *ping)
 	signal(SIGINT, &handle_sigint);
 	signal(SIGQUIT, &handle_sigint);
 
+	printf(
+		BLUE "PING %s (%s) %u data bytes.\n" RESET,
+		ping->hostname,
+		ping->ip_str,
+		((int)(sizeof(t_icmp_header) + ping->payload_length + 20))
+	);
 	// Preload option
 	for (int i = 0; i < ping->preload_count; i++)
 	{
@@ -50,27 +95,34 @@ static void	ping_loop(t_ping *ping)
 		if (!g_is_running) break;
 
 		// Send the ping
-		struct timeval	start, end;
+		struct timeval	start;
 		gettimeofday(&start, NULL);
 		send_ping(ping);
 		
 		// Listen to the echo replay
-		deserialize_icmp_packet(ping);
+		float	elapsed_time_in_seconds = deserialize_icmp_packet(ping, start);
+		
+		// Display the ping result
+		print_echo_reply(ping);
 
 		// Account for interval
-		gettimeofday(&end, NULL);
-		uint64_t	elapsed_usec = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);                                                                                                                                 
-		uint64_t	remaining = (ping->interval * 1000000.0) - elapsed_usec;
+		// gettimeofday(&end, NULL);
+		// uint64_t	elapsed_usec = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);
+		float	remaining = ping->interval - elapsed_time_in_seconds;
 		if (remaining > 0)
 		{
+			LOG(DEBUG RED "remaining : %f seconds" RESET, remaining);
 			struct timespec	ts =
 			{
-				.tv_sec = remaining / 1000000,
-				.tv_nsec = (remaining % 1000000) * 1000
+				.tv_sec = remaining,
+				.tv_nsec = remaining * 1000000000
 			};
 			nanosleep(&ts, NULL);
 		}
+		
 	}
+	
+	print_end_statistics(ping);
 	return;
 }
 
@@ -95,6 +147,9 @@ static void	free_ping(t_ping *ping unused)
 		free(echo_reply);
 		echo_reply = next;
 	}
+	
+	// Free the ip_str
+	if (ping->ip_str) free(ping->ip_str);
 	return ;
 }
 

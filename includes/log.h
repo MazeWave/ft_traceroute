@@ -42,11 +42,21 @@ static void	_log_cleanup_func(t_log **log)
 		log_cleanup(log);
 }
 
+
+#ifdef PRINT_LOGS
+	# define AUTO_LOG \
+		t_log *logInstance __attribute__((cleanup(_log_cleanup_func))) = log_init(__FUNCTION__)
+	# define LOG(...)	log_message_v(logInstance, __VA_ARGS__)
+#else 
+	# define AUTO_LOG	((void)0)                     
+	# define LOG(...)	((void)0)
+#endif
+
 // Macro for automatic logging (creates log instance that auto-cleans up)
-# define AUTO_LOG	\
-	t_log *logInstance __attribute__((cleanup(_log_cleanup_func))) = log_init(__FUNCTION__)
+// # define AUTO_LOG
+	// t_log *logInstance __attribute__((cleanup(_log_cleanup_func))) = log_init(__FUNCTION__)
 
 // Macro for logging messages with printf-style formatting
-# define LOG(...)	log_message_v(logInstance, __VA_ARGS__)
+// # define LOG(...)	log_message_v(logInstance, __VA_ARGS__)
 
 #endif

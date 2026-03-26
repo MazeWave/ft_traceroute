@@ -12,7 +12,7 @@
 
 #include "../includes/ft_ping.h"
 
-void	deserialize_icmp_packet(t_ping *ping)
+float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 {
 	AUTO_LOG;
 
@@ -28,13 +28,13 @@ void	deserialize_icmp_packet(t_ping *ping)
 	{
 		LOG(RED "%s: malloc: Failed to allocate memory for ICMP packet buffer.\n" RESET, ping->program_name);
 		g_is_running = false;
-		return ;
+		return(-1.0);
 	}
 	if (recv(ping->sockfd, buffer, buffer_size, 0) < 0)
 	{
 		free(buffer);
 		LOG(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, ping->program_name);
-		return ;
+		return(-1.0);
 	}
 
 	// Traverse the linked list to find the last node
@@ -46,11 +46,29 @@ void	deserialize_icmp_packet(t_ping *ping)
 		LOG(RED "%s: malloc: Failed to allocate memory for echo reply.\n" RESET, ping->program_name);
 		g_is_running = false;
 		free(buffer);
-		return ;
+		return(-1.0);
 	}
+	// Fill in additionnal information about the echo reply in the new node
 	new_reply_node->reply = *((t_icmp_header *)(buffer + offset));
+	new_reply_node->offset = offset;
+	new_reply_node->length = ping->packet_len + offset;
+	
+	// Calculate the elapsed time in seconds
+	struct timeval	end;
+	gettimeofday(&end, NULL);
+	uint64_t	elapsed_usec = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
+	new_reply_node->elapsed_time_in_usec = elapsed_usec;
+	new_reply_node->elapsed_time_in_ms = elapsed_usec / 1000.0;
+	new_reply_node->elapsed_time_in_seconds = elapsed_usec / 1000000.0;
+	new_reply_node->ttl = (ping->is_root) ? ((struct iphdr *)buffer)->ttl : 0;
+	LOG(DEBUG "Elapsed time: %.2f s " RESET, new_reply_node->elapsed_time_in_seconds);
+	LOG(DEBUG "Elapsed time: %.2f ms" RESET, new_reply_node->elapsed_time_in_ms);
+	LOG(DEBUG "Elapsed time: %.2f us" RESET, new_reply_node->elapsed_time_in_usec);
+	
+	// Apply the new node to the end of the linked list
 	*tail = new_reply_node;
 	free(buffer);
+	return (new_reply_node->elapsed_time_in_seconds);
 }
 
 void	serialize_icmp_packet(t_ping *ping)
@@ -149,6 +167,6 @@ int	resolve_hostname(t_ping *ping)
 		return (EXIT_FAILURE);
 	}
 	ping->addr_info = res;
-	print_addr_info(ping);
+	find_the_ip(ping);
 	return (EXIT_SUCCESS);
 }

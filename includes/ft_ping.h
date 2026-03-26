@@ -26,6 +26,7 @@
 # include <netdb.h>
 # include <netinet/in.h>
 # include <netinet/ip_icmp.h>
+# include <netinet/ip.h>
 # include <signal.h>
 # include <stdint.h>
 # include <stdio.h>
@@ -45,17 +46,15 @@
 # include "log.h"
 # include "colors.h"
 
-#define unused __attribute__((unused))
+# define unused __attribute__((unused))
 
-// TO REMOVE LATER
+// TO REMOVE LATER -- C LANGUAGE SERVER DOESNT SUPPORT C23
 #define true 1
 #define false 0
 #define bool int
 // END TO REMOVE LATER
 
 // From lpolizzi ft_ping
-# define SECOND_IN_USEC 1000000
-
 # define MAXSEQ 65535
 
 # define MAXIPLEN 60
@@ -83,8 +82,16 @@ typedef struct	s_icmp_header
 
 typedef struct s_replies
 {
-	struct s_icmp_header	reply; 
+	struct s_icmp_header	reply;
 	struct s_replies		*next;
+	
+	unsigned int			length;
+	unsigned int			offset;
+	unsigned int			ttl;
+	
+	float					elapsed_time_in_seconds;
+	float					elapsed_time_in_usec;
+	float					elapsed_time_in_ms;
 }	t_replies;
 
 typedef struct	s_ping
@@ -122,12 +129,13 @@ void	init_ping_struct(t_ping *ping, char **argv);
 void	print_ping_struct(t_ping *ping);
 void	print_packet_informations(t_ping *ping);
 void	print_bits(uint32_t n);
+void	print_echo_reply(t_ping *ping);
 
 // socket.c
 int		create_icmp_socket(t_ping *ping);
 int		resolve_hostname(t_ping *ping);
-void	print_addr_info(t_ping *ping);
-void	print_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping);
+void	find_the_ip(t_ping *ping);
+void	get_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping);
 void	send_ping(t_ping *ping);
 
 // icmp_packet.c
@@ -137,6 +145,6 @@ void		read_payload_data_in_packet(t_ping *ping);
 void 		build_ping_packet(t_ping *ping);
 void		add_payload_to_packet(t_ping *ping);
 void		serialize_icmp_packet(t_ping *ping);
-void		deserialize_icmp_packet(t_ping *ping);
+float		deserialize_icmp_packet(t_ping *ping, struct timeval start);
 
 #endif
