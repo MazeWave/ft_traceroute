@@ -35,6 +35,12 @@
 # include <sys/time.h>
 # include <sys/types.h>
 # include <unistd.h>
+# include <time.h>
+
+# include <netinet/ip_icmp.h>
+# include <stddef.h>
+# include <stdint.h>
+# include <stdlib.h>
 
 # include "log.h"
 # include "colors.h"

@@ -74,6 +74,30 @@ static void	ping_loop(t_ping *ping)
 	return;
 }
 
+static void	free_ping(t_ping *ping unused)
+{
+	AUTO_LOG;
+	
+	// Free the addrinfo linked list
+	struct addrinfo	*addr = ping->addr_info;
+	while (addr)
+	{
+		struct addrinfo	*next = addr->ai_next;
+		free(addr);
+		addr = next;
+	}
+	
+	// Free the echo replies linked list
+	t_replies	*echo_reply = ping->replies;
+	while (echo_reply)
+	{
+		t_replies	*next = echo_reply->next;
+		free(echo_reply);
+		echo_reply = next;
+	}
+	return ;
+}
+
 int	main(int argc, char **argv unused)
 {
 	AUTO_LOG;
@@ -91,5 +115,6 @@ int	main(int argc, char **argv unused)
 
 	ping_loop(ping);
 	close(ping->sockfd);
+	free_ping(ping);
 	return (0);
 }
