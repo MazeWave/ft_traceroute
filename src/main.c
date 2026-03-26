@@ -61,7 +61,15 @@ static void	ping_loop(t_ping *ping)
 		gettimeofday(&end, NULL);
 		uint64_t	elapsed_usec = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_usec - start.tv_usec);                                                                                                                                 
 		uint64_t	remaining = (ping->interval * 1000000.0) - elapsed_usec;
-		if (remaining > 0) usleep(remaining);
+		if (remaining > 0)
+		{
+			struct timespec	ts =
+			{
+				.tv_sec = remaining / 1000000,
+				.tv_nsec = (remaining % 1000000) * 1000
+			};
+			nanosleep(&ts, NULL);
+		}
 	}
 	return;
 }

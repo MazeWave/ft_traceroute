@@ -98,8 +98,8 @@ void	help(char *elf_name)
 	printf("  -c <count>    : Set the number of pings to send\n");
 	printf("  -i <interval> : Set the interval between pings\n");
 	printf("  -p <pattern>  : Set the pattern to send in the payload\n");
-	printf("  -t <interval> : Set the interval between pings\n");
-	printf("  -v            : Print the version\n");
+	printf("  -t <timeout>  : Set the timeout for each ping\n");
+	printf("  -V            : Print the version\n");
 	printf("  -h -?         : Print the help\n");
 }
 
@@ -165,9 +165,9 @@ int parse_args(int argc, char **argv, t_ping *ping)
 					ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
 					break;
 				case 't':
-					ping->ttl = atoi(optarg);
-					if (ping->ttl <= 0 || ping->ttl > 255)
+					if (atoi(optarg) <= 0 || atoi(optarg) > 255)
 						return (LOG(RED "Error: Time To Live (TTL) must be between 1 and 255" RESET), help(argv[0]), EXIT_FAILURE);
+					ping->ttl = atoi(optarg);
 					break;
 				case 'w':
 					ping->timeout = atoi(optarg);
