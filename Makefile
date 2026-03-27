@@ -23,8 +23,8 @@ OBJS	=	$(SRC:.c=.o)
 
 CC		=	gcc
 
-# CFLAGS	=	-Wall -Wextra -Werror -DPRINT_LOGS -std=c23 -D_POSIX_C_SOURCE=200809L -fsanitize=address
-CFLAGS	=	-Wall -Wextra -Werror -std=c23 -D_POSIX_C_SOURCE=200809L -fsanitize=address
+# CFLAGS	=	-Wall -Wextra -Werror -DPRINT_LOGS -std=c23 -D_POSIX_C_SOURCE=200809L -lm -fsanitize=address
+CFLAGS	=	-Wall -Wextra -Werror -std=c23 -D_POSIX_C_SOURCE=200809L -lm -fsanitize=address
 
 RM		=	rm -rf
 

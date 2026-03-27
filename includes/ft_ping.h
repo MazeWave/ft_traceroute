@@ -42,6 +42,7 @@
 # include <stddef.h>
 # include <stdint.h>
 # include <stdlib.h>
+# include <math.h>
 
 # include "log.h"
 # include "colors.h"
@@ -113,6 +114,8 @@ typedef struct	s_ping
 	int			sequence;
 	int			count;
 	int			preload_count;
+	uint32_t	packet_sent_count;
+	uint32_t	packet_recieved_count;
 	int			timeout;
 	int			sockfd;
 	float		interval;

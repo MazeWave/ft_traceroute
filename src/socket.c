@@ -68,6 +68,9 @@ float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 	// Apply the new node to the end of the linked list
 	*tail = new_reply_node;
 	free(buffer);
+	
+	// Increment the number of packet recieved
+	ping->packet_recieved_count++;
 	return (new_reply_node->elapsed_time_in_seconds);
 }
 

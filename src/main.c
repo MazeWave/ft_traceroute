@@ -19,35 +19,37 @@ static void	print_end_statistics(t_ping *ping)
 {
 	AUTO_LOG;
 
-	int			packets_received_count = 0;
 	t_replies	*temp = ping->replies;
 	float		round_trip_avg = 0.0;
 	float		round_trip_max = 0.0;
 	float		round_trip_min = INT_MAX;
+	float		round_trip_ecart_type = 0;
 
 	while (temp)
 	{
-		packets_received_count++;
 		(round_trip_min > temp->elapsed_time_in_ms) ? round_trip_min = temp->elapsed_time_in_ms : round_trip_min;
 		(round_trip_max < temp->elapsed_time_in_ms) ? round_trip_max = temp->elapsed_time_in_ms : round_trip_max;
 		round_trip_avg += temp->elapsed_time_in_ms;
+		round_trip_ecart_type += pow(temp->elapsed_time_in_ms - round_trip_avg, 2);
 		temp = temp->next;
 	}
-	if (packets_received_count > 0) round_trip_avg /= packets_received_count;
+	if (ping->packet_recieved_count > 0) round_trip_avg /= ping->packet_recieved_count;
+	if (ping->packet_recieved_count > 0) round_trip_ecart_type = sqrt(round_trip_ecart_type / ping->packet_recieved_count);
 	// else ; // todo : case no packet received
 
 	printf(YELLOW "\n--- %s ping statistics ---\n" RESET, ping->hostname);
 	printf(
 		YELLOW "%d packets transmitted, %d packets recieved, %d%% packet loss\n" RESET,
-		ping->count + 1,
-		packets_received_count,
-		(ping->count != -1) ? ((ping->count - packets_received_count) / 100) * 100 / (ping->count + 1) : 0
+		ping->packet_sent_count,
+		ping->packet_recieved_count,
+		(ping->count != -1) ? ((ping->packet_sent_count - ping->packet_recieved_count) / 100) * 100 / (ping->packet_sent_count + 1) : 0
 	);
 	printf(
-		YELLOW "round-trip min/avg/max = %.2f/%.2f/%.2f ms\n" RESET,
+		YELLOW "round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n" RESET,
 		round_trip_min,
 		round_trip_avg,
-		round_trip_max
+		round_trip_max,
+		round_trip_ecart_type
 	);
 	
 	return ;
@@ -119,7 +121,7 @@ static void	ping_loop(t_ping *ping)
 			};
 			nanosleep(&ts, NULL);
 		}
-		
+		ping->packet_sent_count++;
 	}
 	
 	print_end_statistics(ping);

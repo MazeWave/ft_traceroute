@@ -60,7 +60,7 @@ void	init_icmp_header(t_ping *ping)
 	ping->icmp_packet.type = ICMP_ECHO;
 	ping->icmp_packet.code = 0;
 	ping->icmp_packet.checksum = 0;
-	ping->icmp_packet.identifier = getpid();
+	ping->icmp_packet.identifier = getpid() & 0xffff;
 	ping->icmp_packet.sequence_number = sequence_number++;
 
 	LOG(GREEN "Echo header initialized" RESET);

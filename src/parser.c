@@ -149,6 +149,7 @@ void	version(void)
 void	init_ping_struct(t_ping *ping, char **argv)
 {
 	AUTO_LOG;
+
 	ping->program_name = argv[0];
 	ping->is_bonus = (strstr(argv[0], "ft_ping_bonus") == NULL) ? false : true;
 	ping->is_root = (getuid() == 0);
@@ -167,6 +168,9 @@ void	init_ping_struct(t_ping *ping, char **argv)
 
 	ping->packet = NULL;
 	ping->packet_len = sizeof(t_icmp_header);
+	
+	ping->packet_sent_count = 0;
+	ping->packet_recieved_count = 0;
 }
 
 int parse_args(int argc, char **argv, t_ping *ping)
