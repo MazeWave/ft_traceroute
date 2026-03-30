@@ -24,18 +24,23 @@ static void	print_end_statistics(t_ping *ping)
 	float		round_trip_max = 0.0;
 	float		round_trip_min = INT_MAX;
 	float		round_trip_ecart_type = 0;
+	float		round_trip_sum = 0;
+	float		round_trip_squared_sum = 0;
 
 	while (temp)
 	{
 		(round_trip_min > temp->elapsed_time_in_ms) ? round_trip_min = temp->elapsed_time_in_ms : round_trip_min;
 		(round_trip_max < temp->elapsed_time_in_ms) ? round_trip_max = temp->elapsed_time_in_ms : round_trip_max;
 		round_trip_avg += temp->elapsed_time_in_ms;
-		round_trip_ecart_type += pow(temp->elapsed_time_in_ms - round_trip_avg, 2);
+		round_trip_sum += temp->elapsed_time_in_ms;
+		round_trip_squared_sum += pow(temp->elapsed_time_in_ms, 2);
 		temp = temp->next;
 	}
 	if (ping->packet_recieved_count > 0) round_trip_avg /= ping->packet_recieved_count;
-	if (ping->packet_recieved_count > 0) round_trip_ecart_type = sqrt(round_trip_ecart_type / ping->packet_recieved_count);
-	// else ; // todo : case no packet received
+	if (ping->packet_recieved_count > 0) round_trip_ecart_type = sqrt(
+																		(round_trip_squared_sum / ping->packet_recieved_count)
+																		- pow(round_trip_sum / ping->packet_recieved_count, 2)
+																	);
 
 	printf(YELLOW "\n--- %s ping statistics ---\n" RESET, ping->hostname);
 	printf(
