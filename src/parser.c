@@ -1,17 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   parser.c                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/01/09 14:35:54 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 1717:2020:4545 by ldalmass         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+
 
 #include "../includes/ft_ping.h"
-#include <sys/time.h>
+#include <bits/getopt_core.h>
 
 void	print_echo_reply(t_ping *ping)
 {
@@ -172,73 +162,148 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	gettimeofday(&ping->total_time_elapsed, NULL);
 }
 
-int parse_args(int argc, char **argv, t_ping *ping)
+int	parse_args(int argc, char **argv, t_ping *ping)
 {
 	AUTO_LOG;
-
-	int opt = 0;
-	// Parse all the arguments
-	while (optind < argc)
+	int	opt = 0;
+	LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
+	while ((opt = getopt(argc, argv, "-h?Vvl:f:w:r:p:i:c:")) != -1)
 	{
-		// Checks for options
-		while ((opt = getopt(argc, argv, "?wlhfvVc:i:p:r:")) != -1)
+		LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
+		switch (opt)
 		{
-			switch (opt)
-			{
-				case 'c':
-					ping->count = atoi(optarg);
-					LOG(BLUE "count: %d" RESET, ping->count);
-					if (ping->count <= 0)
-						return (LOG(RED "Error: Count must be greater than 0" RESET), help(argv[0]), EXIT_FAILURE);
-					break;
-				case 'i':
-					ping->interval = atof(optarg);
-					LOG(BLUE "interval: %f" RESET, ping->interval);
-					if (ping->interval < 0.2)
-						return (LOG(RED "Error: Interval must be greater than 0.2 seconds" RESET), help(argv[0]), EXIT_FAILURE);
-					break;
-				case 'p':
-					ping->payload_length = strlen(optarg);
-					ping->payload_raw_string = optarg;
-					ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
-					break;
-				case 'r':
-					if (atoi(optarg) <= 0 || atoi(optarg) > 255)
-						return (LOG(RED "Error: Time To Live (TTL) must be between 1 and 255" RESET), help(argv[0]), EXIT_FAILURE);
-					ping->ttl = atoi(optarg);
-					break;
-				case 'w':
-					ping->timeout = atoi(optarg);
-					break;
-				case 'f':
-					if (!ping->is_root) return (LOG(RED "Error: Flooding require root privileges" RESET), help(argv[0]), EXIT_FAILURE);
-					ping->is_flooding = true;
-					break;
-				case 'l':
-					ping->preload_count = atoi(optarg);
-					if (ping->preload_count > 3 && !ping->is_root)
-						return (LOG(RED "Error: Preload option requires root privileges" RESET), help(argv[0]), EXIT_FAILURE);
-					break;
-				case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging multicast address.
-					return (version(), EXIT_FAILURE);
-				case 'V':
-					return (version(), EXIT_FAILURE);
-				case 'h':
-					return (help(argv[0]), EXIT_FAILURE);
-				case '?':
-					return (help(argv[0]), EXIT_FAILURE);
-				default:
-					return (help(argv[0]), EXIT_FAILURE);
-			}
+			case 'c':
+				ping->count = atoi(optarg);
+				LOG(BLUE "count: %d" RESET, ping->count);
+				if (ping->count <= 0) return (LOG(RED "Error: Count must be greater than 0" RESET), help(argv[0]), EXIT_FAILURE);
+				break;
+			case 'i':
+				ping->interval = atof(optarg);
+				LOG(BLUE "interval: %f" RESET, ping->interval);
+				if (ping->interval < 0.2) return (LOG(RED "Error: Interval must be greater than 0.2 seconds" RESET), help(argv[0]), EXIT_FAILURE);
+				break;
+			case 'p':
+				ping->payload_length = strlen(optarg);
+				ping->payload_raw_string = optarg;
+				ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
+				LOG(BLUE "payload_length: %d" RESET, ping->payload_length);
+				LOG(BLUE "payload_raw_string: %s" RESET, ping->payload_raw_string);
+				LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
+				break;
+			case 'r':
+				if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (LOG(RED "Error: Time To Live (TTL) must be between 1 and 255" RESET), help(argv[0]), EXIT_FAILURE);
+				ping->ttl = atoi(optarg);
+				LOG(BLUE "ttl: %d" RESET, ping->ttl);
+				break;
+			case 'w':
+				ping->timeout = atoi(optarg);
+				LOG(BLUE "timeout: %d" RESET, ping->timeout);
+				break;
+			case 'f':
+				if (!ping->is_root) return (LOG(RED "Error: Flooding require root privileges" RESET), help(argv[0]), EXIT_FAILURE);
+				ping->is_flooding = true;
+				LOG(BLUE "is_flooding: %d" RESET, ping->is_flooding);
+				break;
+			case 'l':
+				ping->preload_count = atoi(optarg);
+				if (ping->preload_count > 3 && !ping->is_root) return (LOG(RED "Error: Preload option requires root privileges" RESET), help(argv[0]), EXIT_FAILURE);
+				LOG(BLUE "preload_count: %d" RESET, ping->preload_count);
+				break;
+			case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging multicast address.
+				return (version(), EXIT_FAILURE);
+			case 'V':
+				return (version(), EXIT_FAILURE);
+			case 'h':
+				LOG(DEBUG "CASE h" RESET);
+				return (help(argv[0]), EXIT_FAILURE);
+			case '?':
+				LOG(DEBUG "CASE ?" RESET);
+				return (help(argv[0]), EXIT_FAILURE);
+			default:
+				LOG(DEBUG "DEFAULT CASE" RESET);
+				if (ping->hostname == NULL)
+					ping->hostname = optarg;
+				LOG(RED "Hostname: %s" RESET, ping->hostname);
+				// return (help(argv[0]), EXIT_FAILURE);
+				break;
 		}
-		// Checks for standalone options
-		if (ping->hostname == NULL)
-			ping->hostname = argv[optind++];
-		else if (ping->hostname != NULL && argv[optind] != NULL)
-			return (LOG(RED "Error: Multiple hostnames provided" RESET), help(argv[0]), EXIT_FAILURE);
 	}
-	// Check if no hostname is provided
 	if (ping->hostname == NULL)
-		return (LOG(RED "Error: No hostname provided" RESET), help(argv[0]), EXIT_FAILURE);
+		ping->hostname = argv[optind];
+	LOG(MAGENTA "Hostname: %s" RESET, ping->hostname);
+	LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
 	return (EXIT_SUCCESS);
 }
+
+// int parse_args(int argc, char **argv, t_ping *ping)
+// {
+// 	AUTO_LOG;
+
+// 	int opt = 0;
+// 	// Parse all the arguments
+// 	while (optind < argc)
+// 	{
+// 		LOG(DEBUG "optind: %d, argc: %d" RESET, optind, argc);
+// 		// Checks for options
+// 		while ((opt = getopt(argc, argv, "?hVwlfvc:i:p:r:")) != -1)
+// 		{
+// 			LOG(DEBUG "optind: %d, argc: %d" RESET, optind, argc);
+// 			switch (opt)
+// 			{
+// 				case 'c':
+// 					ping->count = atoi(optarg);
+// 					LOG(BLUE "count: %d" RESET, ping->count);
+// 					if (ping->count <= 0) return (LOG(RED "Error: Count must be greater than 0" RESET), help(argv[0]), EXIT_FAILURE);
+// 					break;
+// 				case 'i':
+// 					ping->interval = atof(optarg);
+// 					LOG(BLUE "interval: %f" RESET, ping->interval);
+// 					if (ping->interval < 0.2) return (LOG(RED "Error: Interval must be greater than 0.2 seconds" RESET), help(argv[0]), EXIT_FAILURE);
+// 					break;
+// 				case 'p':
+// 					ping->payload_length = strlen(optarg);
+// 					ping->payload_raw_string = optarg;
+// 					ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
+// 					break;
+// 				case 'r':
+// 					if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (LOG(RED "Error: Time To Live (TTL) must be between 1 and 255" RESET), help(argv[0]), EXIT_FAILURE);
+// 					ping->ttl = atoi(optarg);
+// 					break;
+// 				case 'w':
+// 					ping->timeout = atoi(optarg);
+// 					break;
+// 				case 'f':
+// 					if (!ping->is_root) return (LOG(RED "Error: Flooding require root privileges" RESET), help(argv[0]), EXIT_FAILURE);
+// 					ping->is_flooding = true;
+// 					break;
+// 				case 'l':
+// 					ping->preload_count = atoi(optarg);
+// 					if (ping->preload_count > 3 && !ping->is_root)
+// 						return (LOG(RED "Error: Preload option requires root privileges" RESET), help(argv[0]), EXIT_FAILURE);
+// 					break;
+// 				case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging multicast address.
+// 					return (version(), EXIT_FAILURE);
+// 				case 'V':
+// 					return (version(), EXIT_FAILURE);
+// 				case 'h':
+// 					LOG(DEBUG "TEST1" RESET);
+// 					return (help(argv[0]), EXIT_FAILURE);
+// 				case '?':
+// 					LOG(DEBUG "TEST2" RESET);
+// 					return (help(argv[0]), EXIT_FAILURE);
+// 				default:
+// 					LOG(DEBUG "TEST3" RESET);
+// 					return (help(argv[0]), EXIT_FAILURE);
+// 			}
+// 		}
+// 		// Checks for standalone options
+// 		if (ping->hostname == NULL)
+// 			ping->hostname = argv[optind++];
+// 		else if (ping->hostname != NULL && argv[optind] != NULL)
+// 			return (LOG(RED "Error: Multiple hostnames provided" RESET), help(argv[0]), EXIT_FAILURE);
+// 	}
+// 	// Check if no hostname is provided
+// 	if (ping->hostname == NULL)
+// 		return (LOG(RED "Error: No hostname provided" RESET), help(argv[0]), EXIT_FAILURE);
+// 	return (EXIT_SUCCESS);
+// }
