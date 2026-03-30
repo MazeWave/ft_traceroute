@@ -146,8 +146,8 @@ int	create_icmp_socket(t_ping *ping)
 	struct timeval	tv;
 	tv.tv_sec = ping->interval;
 	tv.tv_usec = (ping->interval - tv.tv_sec) * 1000000.0;
-	setsockopt(ping->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-	setsockopt(ping->sockfd, IPPROTO_IP, IP_TTL, &ping->ttl, sizeof(ping->ttl));
+	setsockopt(ping->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));				// set socket to be non-blocking
+	setsockopt(ping->sockfd, IPPROTO_IP, IP_TTL, &ping->ttl, sizeof(ping->ttl));	// set the TTL
 	return (EXIT_SUCCESS);
 }
 
