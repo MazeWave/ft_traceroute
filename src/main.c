@@ -12,6 +12,7 @@
 
 #include "../includes/ft_ping.h"
 #include <limits.h>
+#include <stdio.h>
 
 volatile bool	g_is_running = true;
 
@@ -99,13 +100,14 @@ static void	ping_loop(t_ping *ping)
 		printf(".");
 		fflush(stdout);
 		send_ping(ping);
-		if (deserialize_icmp_packet(ping, start) != -1.0)
+		ping->packet_sent_count++;
+		if (ping->count != -1) ping->count--;
+		float ret = 0.0;
+		while ((ret = deserialize_icmp_packet(ping, start)) > 0.0)
 		{
 			printf("\b");
 			fflush(stdout);
 		}
-		ping->packet_sent_count++;
-		if (ping->count != -1) ping->count--;
 	}
 
 	// Preload option
