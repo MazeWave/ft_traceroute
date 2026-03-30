@@ -44,10 +44,11 @@ static void	print_end_statistics(t_ping *ping)
 
 	printf(YELLOW "\n--- %s ping statistics ---\n" RESET, ping->hostname);
 	printf(
-		YELLOW "%d packets transmitted, %d packets recieved, %d%% packet loss\n" RESET,
+		YELLOW "%d packets transmitted, %d packets recieved, %.3f%% packet loss, time %.3fms\n" RESET,
 		ping->packet_sent_count,
 		ping->packet_recieved_count,
-		(ping->count != -1) ? ((ping->packet_sent_count - ping->packet_recieved_count) / 100) * 100 / (ping->packet_sent_count + 1) : 0
+		1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count),
+		ping->replies->elapsed_time_in_ms
 	);
 	printf(
 		YELLOW "round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n" RESET,
@@ -82,18 +83,42 @@ static void	ping_loop(t_ping *ping)
 		ping->ip_str,
 		ping->payload_length
 	);
+	
+	// Flooding option
+	while (ping->is_flooding && g_is_running)
+	{
+		if (ping->count == 0) break;
+		struct timeval	start;
+		gettimeofday(&start, NULL);
+		build_ping_packet(ping);
+		printf(".");
+		fflush(stdout);
+		send_ping(ping);
+		if (deserialize_icmp_packet(ping, start) != -1.0)
+		{
+			printf("\b");
+			fflush(stdout);
+		}
+		ping->packet_sent_count++;
+		if (ping->count != -1) ping->count--;
+	}
+
 	// Preload option
 	for (int i = 0; i < ping->preload_count; i++)
 	{
+		struct timeval	start;
+		gettimeofday(&start, NULL);
 		build_ping_packet(ping);
 		send_ping(ping);
+		deserialize_icmp_packet(ping, start);
+		ping->packet_sent_count++;
 	}
 
 	// Main ping loop
 	while (g_is_running)
 	{
 		// Account for count
-		if (ping->count == 0 || ping->ttl == 0) break;
+		if (ping->count == 0) break;
 		if (ping->count != -1) ping->count--;
 		LOG(YELLOW "pinging... count: %d" RESET, ping->count + 1);
 

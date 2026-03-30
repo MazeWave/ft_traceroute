@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "../includes/ft_ping.h"
+#include <stdlib.h>
+#include <sys/select.h>
 
 float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 {
@@ -30,7 +32,28 @@ float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 		g_is_running = false;
 		return(-1.0);
 	}
-	if (recv(ping->sockfd, buffer, buffer_size, 0) < 0)
+	struct timeval tv =
+	{
+		.tv_sec = 0,
+		.tv_usec = 10000
+	};
+	if (ping->is_flooding)
+	{
+		fd_set	read_fds;
+		FD_ZERO(&read_fds);
+		FD_SET(ping->sockfd, &read_fds);
+		if (select(ping->sockfd + 1, &read_fds, NULL, NULL, &tv) <= 0)
+		{
+			free(buffer);
+			return (0.0);
+		}
+		if (recv(ping->sockfd, buffer, buffer_size, 0) < 0)
+		{
+			free(buffer);
+			return (-1.0);
+		}
+	}
+	else if (recv(ping->sockfd, buffer, buffer_size, 0) < 0)
 	{
 		free(buffer);
 		LOG(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, ping->program_name);
