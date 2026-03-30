@@ -21,7 +21,6 @@ void	build_ping_packet(t_ping *ping)
 	if (!ping->packet) return ;
 	ping->icmp_packet.checksum = calculate_checksum((uint16_t *)ping->packet, ping->packet_len);
 	*(uint16_t *)&ping->packet[2] = ping->icmp_packet.checksum;		// this writes both the packet[2] and packet[3]
-	// *(uint16_t *)&ping->packet[4] = ping->icmp_packet.identifier;	// this writes both the packet[4] and packet[5]
 	return ;
 }
 

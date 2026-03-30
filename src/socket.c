@@ -51,7 +51,7 @@ float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 	// Fill in additionnal information about the echo reply in the new node
 	new_reply_node->reply = *((t_icmp_header *)(buffer + offset));
 	new_reply_node->offset = offset;
-	new_reply_node->length = ping->packet_len + offset;
+	new_reply_node->length = ping->packet_len;
 	
 	// Calculate the elapsed time in seconds
 	struct timeval	end;
@@ -147,6 +147,7 @@ int	create_icmp_socket(t_ping *ping)
 	tv.tv_sec = ping->interval;
 	tv.tv_usec = (ping->interval - tv.tv_sec) * 1000000.0;
 	setsockopt(ping->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	setsockopt(ping->sockfd, IPPROTO_IP, IP_TTL, &ping->ttl, sizeof(ping->ttl));
 	return (EXIT_SUCCESS);
 }
 

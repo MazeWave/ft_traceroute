@@ -161,14 +161,11 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->timeout = 0;
 	ping->ttl = 64;
 	ping->preload_count = 0;
-	// ping->payload_length = PING_DEFAULT_DATA_LEN;
-	ping->payload_length = 0;
+	ping->payload_length = PING_DEFAULT_DATA_LEN;
 	ping->ip = 0;
 	ping->count = -1;
-
 	ping->packet = NULL;
-	ping->packet_len = sizeof(t_icmp_header);
-	
+	ping->packet_len = sizeof(t_icmp_header) + ping->payload_length;
 	ping->packet_sent_count = 0;
 	ping->packet_recieved_count = 0;
 }
@@ -182,7 +179,7 @@ int parse_args(int argc, char **argv, t_ping *ping)
 	while (optind < argc)
 	{
 		// Checks for options
-		while ((opt = getopt(argc, argv, "?wlhfvVc:i:p:t:")) != -1)
+		while ((opt = getopt(argc, argv, "?wlhfvVc:i:p:r:")) != -1)
 		{
 			switch (opt)
 			{
@@ -199,13 +196,11 @@ int parse_args(int argc, char **argv, t_ping *ping)
 						return (LOG(RED "Error: Interval must be greater than 0.2 seconds" RESET), help(argv[0]), EXIT_FAILURE);
 					break;
 				case 'p':
-					// if (optarg[0] == '-')
-					// 	return (LOG(RED "Error: Pattern cannot be empty" RESET), help(argv[0]), EXIT_FAILURE);
 					ping->payload_length = strlen(optarg);
 					ping->payload_raw_string = optarg;
 					ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
 					break;
-				case 't':
+				case 'r':
 					if (atoi(optarg) <= 0 || atoi(optarg) > 255)
 						return (LOG(RED "Error: Time To Live (TTL) must be between 1 and 255" RESET), help(argv[0]), EXIT_FAILURE);
 					ping->ttl = atoi(optarg);

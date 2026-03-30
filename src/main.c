@@ -80,7 +80,7 @@ static void	ping_loop(t_ping *ping)
 		BLUE "PING %s (%s) %u data bytes.\n" RESET,
 		ping->hostname,
 		ping->ip_str,
-		((int)(sizeof(t_icmp_header) + ping->payload_length + 20))
+		ping->payload_length
 	);
 	// Preload option
 	for (int i = 0; i < ping->preload_count; i++)
