@@ -100,6 +100,7 @@ typedef struct	s_ping
 	struct s_icmp_header	icmp_packet;
 	struct addrinfo			*addr_info;
 	struct s_replies		*replies;
+	struct timeval			total_time_elapsed;
 
 	bool		is_bonus;
 	bool		is_root;

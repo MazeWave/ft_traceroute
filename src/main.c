@@ -27,6 +27,7 @@ static void	print_end_statistics(t_ping *ping)
 	float		round_trip_sum = 0;
 	float		round_trip_squared_sum = 0;
 
+
 	while (temp)
 	{
 		(round_trip_min > temp->elapsed_time_in_ms) ? round_trip_min = temp->elapsed_time_in_ms : round_trip_min;
@@ -42,13 +43,17 @@ static void	print_end_statistics(t_ping *ping)
 																		- pow(round_trip_sum / ping->packet_recieved_count, 2)
 																	);
 
+	struct timeval	total_time = ping->total_time_elapsed;
+	gettimeofday(&ping->total_time_elapsed, NULL);
+	uint64_t	total_time_in_ms =	(ping->total_time_elapsed.tv_sec * 1000.0 + ping->total_time_elapsed.tv_usec / 1000.0)
+									- (total_time.tv_sec * 1000.0 + total_time.tv_usec / 1000.0);
 	printf(YELLOW "\n--- %s ping statistics ---\n" RESET, ping->hostname);
 	printf(
-		YELLOW "%d packets transmitted, %d packets recieved, %.3f%% packet loss, time %.3fms\n" RESET,
+		YELLOW "%d packets transmitted, %d packets recieved, %.3f%% packet loss, time %lums\n" RESET,
 		ping->packet_sent_count,
 		ping->packet_recieved_count,
 		1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count),
-		ping->replies->elapsed_time_in_ms
+		total_time_in_ms
 	);
 	printf(
 		YELLOW "round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n" RESET,
@@ -57,7 +62,7 @@ static void	print_end_statistics(t_ping *ping)
 		round_trip_max,
 		round_trip_ecart_type
 	);
-	
+
 	return ;
 }
 
@@ -83,7 +88,7 @@ static void	ping_loop(t_ping *ping)
 		ping->ip_str,
 		ping->payload_length
 	);
-	
+
 	// Flooding option
 	while (ping->is_flooding && g_is_running)
 	{
@@ -130,10 +135,10 @@ static void	ping_loop(t_ping *ping)
 		struct timeval	start;
 		gettimeofday(&start, NULL);
 		send_ping(ping);
-		
+
 		// Listen to the echo replay
 		float	elapsed_time_in_seconds = deserialize_icmp_packet(ping, start);
-		
+
 		// Display the ping result
 		print_echo_reply(ping);
 
@@ -153,7 +158,7 @@ static void	ping_loop(t_ping *ping)
 		}
 		ping->packet_sent_count++;
 	}
-	
+
 	print_end_statistics(ping);
 	return;
 }
@@ -161,7 +166,7 @@ static void	ping_loop(t_ping *ping)
 static void	free_ping(t_ping *ping unused)
 {
 	AUTO_LOG;
-	
+
 	// Free the addrinfo linked list
 	struct addrinfo	*addr = ping->addr_info;
 	while (addr)
@@ -170,7 +175,7 @@ static void	free_ping(t_ping *ping unused)
 		free(addr);
 		addr = next;
 	}
-	
+
 	// Free the echo replies linked list
 	t_replies	*echo_reply = ping->replies;
 	while (echo_reply)
@@ -179,7 +184,7 @@ static void	free_ping(t_ping *ping unused)
 		free(echo_reply);
 		echo_reply = next;
 	}
-	
+
 	// Free the ip_str
 	if (ping->ip_str) free(ping->ip_str);
 	return ;

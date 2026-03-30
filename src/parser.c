@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../includes/ft_ping.h"
+#include <sys/time.h>
 
 void	print_echo_reply(t_ping *ping)
 {
@@ -168,6 +169,7 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->packet_len = sizeof(t_icmp_header) + ping->payload_length;
 	ping->packet_sent_count = 0;
 	ping->packet_recieved_count = 0;
+	gettimeofday(&ping->total_time_elapsed, NULL);
 }
 
 int parse_args(int argc, char **argv, t_ping *ping)
