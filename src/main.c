@@ -124,12 +124,14 @@ static void	ping_loop(t_ping *ping)
 	// Preload option
 	for (int i = 0; i < ping->preload_count; i++)
 	{
+		if (!g_is_running) break;
 		struct timeval	start;
 		gettimeofday(&start, NULL);
 		build_ping_packet(ping);
 		send_ping(ping);
 		deserialize_icmp_packet(ping, start);
 		ping->packet_sent_count++;
+		if (ping->count > 0) ping->count--;
 	}
 
 	// Main ping loop

@@ -127,7 +127,6 @@ typedef struct	s_ping
 	int			timeout;
 	int			sockfd;
 	float		interval;
-	
 	uint8_t		*packet;
 	size_t		packet_len;
 	

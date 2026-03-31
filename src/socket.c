@@ -173,6 +173,7 @@ int	create_icmp_socket(t_ping *ping)
 	tv.tv_usec = (ping->interval - tv.tv_sec) * 1000000.0;
 	setsockopt(ping->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));				// set socket to be non-blocking
 	setsockopt(ping->sockfd, IPPROTO_IP, IP_TTL, &ping->ttl, sizeof(ping->ttl));	// set the TTL
+	if (ping->is_root && ping->is_verbose) printf(YELLOW "ping: sock4.fd: 3 (socktype: SOCK_RAW), hints.ai_family: AF_INET\n" RESET);
 	return (EXIT_SUCCESS);
 }
 

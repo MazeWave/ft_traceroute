@@ -92,6 +92,7 @@ void	get_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping)
 	}
 	LOG(GREEN "ip as int: %d" BLUE, ping->ip);
 	LOG(GREEN "ip as string: %s" BLUE, ip_str);
+	if (ping->is_root && ping->is_verbose) printf(YELLOW "ai->ai_family: AF_INET, ai->ai_canonname: '%s'\n" RESET, ping->hostname);
 	return ;
 }
 
