@@ -61,9 +61,10 @@
 # define MAXIPLEN 60
 # define MAXICMPLEN 76
 
-# define PING_DEFAULT_DATA_LEN 56 // Can be found in the man page of ping
 # define PING_MAX_DATA_LEN (65507 - MAXIPLEN - MAXICMPLEN)
 // end of lpolizzi ft_ping
+# define PING_DEFAULT_DATA_LEN 56 // Can be found in the man page of ping
+# define NI_MAXHOST 1025
 
 extern volatile bool	g_is_running;
 
@@ -85,6 +86,8 @@ typedef struct s_replies
 {
 	struct s_icmp_header	reply;
 	struct s_replies		*next;
+	
+	char					reversed_dns_str[NI_MAXHOST];
 	
 	unsigned int			length;
 	unsigned int			offset;

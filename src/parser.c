@@ -15,8 +15,9 @@ void	print_echo_reply(t_ping *ping)
 	{
 	case true:
 		printf(
-			GREEN "%u bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
+			GREEN "%u bytes from %s (%s): icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
 			reply->length,
+			reply->reversed_dns_str,
 			ping->ip_str,
 			reply->reply.sequence_number,
 			reply->ttl,
@@ -167,7 +168,7 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 	AUTO_LOG;
 	int	opt = 0;
 	LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
-	while ((opt = getopt(argc, argv, "-h?Vvl:f:w:r:p:i:c:")) != -1)
+	while ((opt = getopt(argc, argv, "-h?Vvfl:w:r:p:i:c:")) != -1)
 	{
 		LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
 		switch (opt)
@@ -180,7 +181,7 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 			case 'i':
 				ping->interval = atof(optarg);
 				LOG(BLUE "interval: %f" RESET, ping->interval);
-				if (ping->interval < 0.2) return (LOG(RED "Error: Interval must be greater than 0.2 seconds" RESET), help(argv[0]), EXIT_FAILURE);
+				if (!ping->is_root && ping->interval < 0.2) return (LOG(RED "Error: Interval must be greater than 0.2 seconds" RESET), help(argv[0]), EXIT_FAILURE);
 				break;
 			case 'p':
 				ping->payload_length = strlen(optarg);

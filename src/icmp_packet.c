@@ -62,12 +62,6 @@ void	init_icmp_header(t_ping *ping)
 	ping->icmp_packet.identifier = getpid() & 0xffff;
 	ping->icmp_packet.sequence_number = sequence_number++;
 
-	LOG(GREEN "Echo header initialized" RESET);
-	return ;
-}
-
-void    parse_echo_reply(t_ping *ping unused)
-{
-	AUTO_LOG;
+	LOG(GREEN "ICMP header initialized" RESET);
 	return ;
 }

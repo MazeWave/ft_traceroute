@@ -88,6 +88,10 @@ float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 	LOG(DEBUG "Elapsed time: %.2f ms" RESET, new_reply_node->elapsed_time_in_ms);
 	LOG(DEBUG "Elapsed time: %.2f us" RESET, new_reply_node->elapsed_time_in_usec);
 	
+	// Add the reversed DNS string to the new node if we can
+	if (getnameinfo((struct sockaddr *)ping->addr_info->ai_addr, ping->addr_info->ai_addrlen, new_reply_node->reversed_dns_str, NI_MAXHOST, NULL, 0, NI_NAMEREQD) != 0)
+		new_reply_node->reversed_dns_str[0] = '\0';
+	
 	// Apply the new node to the end of the linked list
 	*tail = new_reply_node;
 	free(buffer);
