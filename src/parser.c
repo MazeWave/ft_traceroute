@@ -163,9 +163,13 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->is_bonus = (strstr(argv[0], "ft_ping_bonus") == NULL) ? false : true;
 	ping->is_root = (getuid() == 0);
 	ping->is_flooding = false;
+	ping->exit_status = false;
 	ping->hostname = NULL;
 	ping->ip_str = NULL;
 	ping->addr_info = NULL;
+	ping->replies = NULL;
+	ping->payload_raw_string = NULL;
+	ping->is_verbose = false;
 	ping->interval = 1;
 	ping->timeout = 0;
 	ping->ttl = 64;
@@ -192,19 +196,19 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 		switch (opt)
 		{
 			case 'c':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
 				ping->count = atoi(optarg);
 				LOG(BLUE "count: %d" RESET, ping->count);
-				if (ping->count <= 0) return (printf(RED "Error: Count must be greater than 0\n" RESET), help(ping), EXIT_FAILURE);
+				if (ping->count <= 0) return (printf(RED "Error: Count must be greater than 0\n" RESET), help(ping), ping->exit_status = true);
 				break;
 			case 'i':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
 				ping->interval = atof(optarg);
 				LOG(BLUE "interval: %f" RESET, ping->interval);
-				if (!ping->is_root && ping->interval < 0.2) return (printf(RED "Error: Interval must be greater than 0.2 seconds\n" RESET), help(ping), EXIT_FAILURE);
+				if (!ping->is_root && ping->interval < 0.2) return (printf(RED "Error: Interval must be greater than 0.2 seconds\n" RESET), help(ping), ping->exit_status = true);
 				break;
 			case 'p':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
 				ping->payload_length = strlen(optarg);
 				ping->payload_raw_string = optarg;
 				ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
@@ -213,7 +217,7 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 				LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
 				break;
 			case 's':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
 				ping->payload_length = strlen(optarg);
 				ping->payload_raw_string = optarg;
 				ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
@@ -222,38 +226,38 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 				LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
 				break;
 			case 'r':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
-				if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: Time To Live (TTL) must be between 1 and 255\n" RESET), help(ping), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
+				if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: Time To Live (TTL) must be between 1 and 255\n" RESET), help(ping), ping->exit_status = true);
 				ping->ttl = atoi(optarg);
 				LOG(BLUE "ttl: %d" RESET, ping->ttl);
 				break;
 			case 'w':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
 				ping->timeout = atoi(optarg);
 				LOG(BLUE "timeout: %d" RESET, ping->timeout);
 				break;
 			case 'f':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
-				if (!ping->is_root) return (printf(RED "Error: Flooding require root privileges\n" RESET), help(ping), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
+				if (!ping->is_root) return (printf(RED "Error: Flooding require root privileges\n" RESET), help(ping), ping->exit_status = true);
 				ping->is_flooding = true;
 				LOG(BLUE "is_flooding: %d" RESET, ping->is_flooding);
 				break;
 			case 'l':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
 				ping->preload_count = atoi(optarg);
-				if (ping->preload_count > 3 && !ping->is_root) return (printf(RED "Error: Preload option requires root privileges\n" RESET), help(ping), EXIT_FAILURE);
+				if (ping->preload_count > 3 && !ping->is_root) return (printf(RED "Error: Preload option requires root privileges\n" RESET), help(ping), ping->exit_status = true);
 				LOG(BLUE "preload_count: %d" RESET, ping->preload_count);
 				break;
 			case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging multicast address.
 				ping->is_verbose = true;
 				break;
 			case 'V':
-				if (!ping->is_bonus) return(help(ping), EXIT_FAILURE);
-				return (version(), EXIT_FAILURE);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
+				return (version(), ping->exit_status = false, EXIT_FAILURE);
 			case 'h':
-				return (help(ping), EXIT_FAILURE);
+				return (help(ping), ping->exit_status = false, EXIT_FAILURE);
 			case '?':
-				return (help(ping), EXIT_FAILURE);
+				return (help(ping), ping->exit_status = false, EXIT_FAILURE);
 			default:
 				
 				if (ping->hostname == NULL) ping->hostname = optarg;

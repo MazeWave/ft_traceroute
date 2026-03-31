@@ -111,6 +111,7 @@ typedef struct	s_ping
 	bool		is_root;
 	bool		is_flooding;
 	bool		is_verbose;
+	bool		exit_status;
 	char		*program_name;
 	char		*hostname;
 	char		*ip_str;

@@ -201,7 +201,7 @@ int	main(int argc, char **argv unused)
 	if (argc < 2)
 		return (help(ping), EXIT_FAILURE);
 
-	if (parse_args(argc, argv, ping) == EXIT_FAILURE) return (EXIT_FAILURE);
+	if (parse_args(argc, argv, ping) == EXIT_FAILURE) return (ping->exit_status);
 	if (create_icmp_socket(ping) == EXIT_FAILURE) return (EXIT_FAILURE);
 	if (resolve_hostname(ping) == EXIT_FAILURE) return (EXIT_FAILURE);
 

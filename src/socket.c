@@ -106,7 +106,7 @@ void	serialize_icmp_packet(t_ping *ping)
 	size_t		i = 0;
 	size_t		len = sizeof(ping->icmp_packet) + ping->payload_length;
 	uint8_t		*buf = (uint8_t *)&ping->icmp_packet;
-	uint8_t		*payload_data = (uint8_t *)&ping->payload_raw_string;
+	uint8_t		*payload_data = (uint8_t *)ping->payload_raw_string;
 
 	ping->packet = calloc(ping->packet_len, sizeof(uint8_t));
 	if (!ping->packet)
@@ -124,7 +124,7 @@ void	serialize_icmp_packet(t_ping *ping)
 	    i++;
 	}
 	// Serialize payload data
-	while (i < len)
+	while (payload_data && i < len)
 	{
 	    ping->packet[i] = payload_data[i - sizeof(ping->icmp_packet)];
 	    i++;
@@ -156,8 +156,8 @@ int	create_icmp_socket(t_ping *ping)
 		ping->sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	else // If the user is not root, create a DGRAM socket
 	{
-		printf(RED "%s: socket: Operation not permitted. Raw sockets require root privileges.\n" RESET, ping->program_name);
-		printf(RED "%s: socket: Creating a DGRAM socket instead.\n" RESET, ping->program_name);
+		if (ping->is_verbose) printf(RED "%s: socket: Operation not permitted. Raw sockets require root privileges.\n" RESET, ping->program_name);
+		if (ping->is_verbose) printf(RED "%s: socket: Creating a DGRAM socket instead.\n" RESET, ping->program_name);
 		ping->sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP);
 	}
 
@@ -191,8 +191,6 @@ int	resolve_hostname(t_ping *ping)
 	if (getaddrinfo(ping->hostname, NULL, &hints, &res) != 0)
 	{
 		printf(RED "%s: getaddrinfo: Failed to resolve hostname." RESET, ping->program_name);
-		freeaddrinfo(res);	// free
-		res = NULL;			// free
 		return (EXIT_FAILURE);
 	}
 	ping->addr_info = res;
