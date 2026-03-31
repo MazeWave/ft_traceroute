@@ -19,6 +19,8 @@
 # include <unistd.h>
 # include <stdlib.h>
 
+# include <bits/getopt_core.h>
+
 # include <arpa/inet.h>
 # include <fcntl.h>
 # include <limits.h>
@@ -33,6 +35,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <sys/socket.h>
+# include <sys/select.h>
 # include <sys/time.h>
 # include <sys/types.h>
 # include <unistd.h>
@@ -56,14 +59,13 @@
 // END TO REMOVE LATER
 
 // From lpolizzi ft_ping
-# define MAXSEQ 65535
-
-# define MAXIPLEN 60
-# define MAXICMPLEN 76
-
-# define PING_MAX_DATA_LEN (65507 - MAXIPLEN - MAXICMPLEN)
+// # define MAXSEQ 65535
+// # define MAXIPLEN 60
+// # define MAXICMPLEN 76
+// # define PING_MAX_DATA_LEN (65507 - MAXIPLEN - MAXICMPLEN)
 // end of lpolizzi ft_ping
-# define PING_DEFAULT_DATA_LEN 56 // Can be found in the man page of ping
+
+# define PING_DEFAULT_DATA_LEN 56
 # define NI_MAXHOST 1025
 
 extern volatile bool	g_is_running;
@@ -108,6 +110,7 @@ typedef struct	s_ping
 	bool		is_bonus;
 	bool		is_root;
 	bool		is_flooding;
+	bool		is_verbose;
 	char		*program_name;
 	char		*hostname;
 	char		*ip_str;
@@ -131,7 +134,7 @@ typedef struct	s_ping
 
 // parser.c
 int		parse_args(int argc, char **argv, t_ping *ping);
-void	help(char *elf_name);
+void	help(t_ping *ping);
 void	init_ping_struct(t_ping *ping, char **argv);
 void	print_ping_struct(t_ping *ping);
 void	print_packet_informations(t_ping *ping);

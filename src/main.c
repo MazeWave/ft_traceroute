@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/ft_ping.h"
-#include <limits.h>
-#include <stdio.h>
 
 volatile bool	g_is_running = true;
 
@@ -196,13 +194,13 @@ int	main(int argc, char **argv unused)
 {
 	AUTO_LOG;
 
-	if (argc < 2)
-		return (help(argv[0]), EXIT_FAILURE);
-
 	t_ping	pingu;
 	t_ping	*ping = &pingu;
-
 	init_ping_struct(ping, argv);
+
+	if (argc < 2)
+		return (help(ping), EXIT_FAILURE);
+
 	if (parse_args(argc, argv, ping) == EXIT_FAILURE) return (EXIT_FAILURE);
 	if (create_icmp_socket(ping) == EXIT_FAILURE) return (EXIT_FAILURE);
 	if (resolve_hostname(ping) == EXIT_FAILURE) return (EXIT_FAILURE);

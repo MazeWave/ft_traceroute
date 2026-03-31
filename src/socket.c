@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/ft_ping.h"
-#include <stdlib.h>
-#include <sys/select.h>
 
 float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 {
