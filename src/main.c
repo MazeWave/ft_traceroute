@@ -47,13 +47,26 @@ static void	print_end_statistics(t_ping *ping)
 	uint64_t	total_time_in_ms =	(ping->total_time_elapsed.tv_sec * 1000.0 + ping->total_time_elapsed.tv_usec / 1000.0)
 									- (total_time.tv_sec * 1000.0 + total_time.tv_usec / 1000.0);
 	printf(YELLOW "\n--- %s ping statistics ---\n" RESET, ping->hostname);
-	printf(
-		YELLOW "%d packets transmitted, %d packets recieved, %.3f%% packet loss, time %lums\n" RESET,
-		ping->packet_sent_count,
-		ping->packet_recieved_count,
-		1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count),
-		total_time_in_ms
-	);
+	switch(ping->is_root)
+	{
+		case true:
+		printf(
+			YELLOW "%d packets transmitted, %d packets received, %d%% packet loss, time %lums\n" RESET,
+			ping->packet_sent_count,
+			ping->packet_recieved_count,
+			(int)(1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count)) * 100,
+			total_time_in_ms
+		);
+		break;
+		case false:
+		printf(
+			YELLOW "%d packets transmitted, %d packets received, %d%% packet loss\n" RESET,
+			ping->packet_sent_count,
+			ping->packet_recieved_count,
+			(int)(1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count)) * 100
+		);
+		break;
+	}
 	printf(
 		YELLOW "round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n" RESET,
 		round_trip_min,
@@ -82,7 +95,7 @@ static void	ping_loop(t_ping *ping)
 	signal(SIGQUIT, &handle_sigint);
 
 	printf(
-		BLUE "PING %s (%s): %u data bytes.\n" RESET,
+		BLUE "PING %s (%s): %u data bytes\n" RESET,
 		ping->hostname,
 		ping->ip_str,
 		ping->payload_length
