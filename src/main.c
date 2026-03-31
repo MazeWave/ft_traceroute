@@ -82,7 +82,7 @@ static void	ping_loop(t_ping *ping)
 	signal(SIGQUIT, &handle_sigint);
 
 	printf(
-		BLUE "PING %s (%s) %u data bytes.\n" RESET,
+		BLUE "PING %s (%s): %u data bytes.\n" RESET,
 		ping->hostname,
 		ping->ip_str,
 		ping->payload_length

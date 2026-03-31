@@ -1,5 +1,6 @@
 #include "../includes/ft_ping.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void	print_echo_reply(t_ping *ping)
 {
@@ -24,10 +25,11 @@ void	print_echo_reply(t_ping *ping)
 		return ;
 	case false:
 		printf(
-			GREEN "%u bytes from %s: icmp_seq=%d time=%.3f ms\n" RESET,
+			GREEN "%u bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
 			reply->length,
 			ping->ip_str,
 			reply->reply.sequence_number,
+			reply->ttl,
 			reply->elapsed_time_in_ms
 		);
 		return ;
@@ -237,8 +239,8 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 				LOG(BLUE "timeout: %d" RESET, ping->timeout);
 				break;
 			case 'f':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				if (!ping->is_root) return (printf(RED "Error: Flooding require root privileges\n" RESET), help(ping), ping->exit_status = true);
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = false, EXIT_FAILURE);
+				if (!ping->is_root) return (printf(RED "Error: Flooding require root privileges\n" RESET), help(ping), ping->exit_status = false, EXIT_FAILURE);
 				ping->is_flooding = true;
 				LOG(BLUE "is_flooding: %d" RESET, ping->is_flooding);
 				break;
