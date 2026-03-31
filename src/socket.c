@@ -33,9 +33,10 @@ float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 	struct timeval tv =
 	{
 		.tv_sec = 0,
-		.tv_usec = 10000
+		// .tv_usec = 10000
+		.tv_usec = 0
 	};
-	if (ping->is_flooding)
+	if (ping->is_flooding || ping->preload_count > 0)
 	{
 		fd_set	read_fds;
 		FD_ZERO(&read_fds);

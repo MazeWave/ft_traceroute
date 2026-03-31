@@ -54,7 +54,7 @@ static void	print_end_statistics(t_ping *ping)
 			YELLOW "%d packets transmitted, %d packets received, %d%% packet loss, time %lums\n" RESET,
 			ping->packet_sent_count,
 			ping->packet_recieved_count,
-			(int)(1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count)) * 100,
+			(int)((1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count)) * 100),
 			total_time_in_ms
 		);
 		break;
@@ -63,7 +63,7 @@ static void	print_end_statistics(t_ping *ping)
 			YELLOW "%d packets transmitted, %d packets received, %d%% packet loss\n" RESET,
 			ping->packet_sent_count,
 			ping->packet_recieved_count,
-			(int)(1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count)) * 100
+			(int)((1.0 - ((float)ping->packet_recieved_count / (float)ping->packet_sent_count)) * 100)
 		);
 		break;
 	}
@@ -122,16 +122,22 @@ static void	ping_loop(t_ping *ping)
 	}
 
 	// Preload option
-	for (int i = 0; i < ping->preload_count; i++)
+	if (ping->preload_count > 0)
 	{
-		if (!g_is_running) break;
+		for (int i = 0; i < ping->preload_count; i++)
+		{
+			if (!g_is_running) break;
+			build_ping_packet(ping);
+			send_ping(ping);
+			ping->packet_sent_count++;
+			if (ping->count > 0) ping->count--;
+		}
+		ping->preload_count = 0;
 		struct timeval	start;
+		float 			ret = 0.0;
 		gettimeofday(&start, NULL);
-		build_ping_packet(ping);
-		send_ping(ping);
-		deserialize_icmp_packet(ping, start);
-		ping->packet_sent_count++;
-		if (ping->count > 0) ping->count--;
+		while ((ret = deserialize_icmp_packet(ping, start)) > 0.0)
+			print_echo_reply(ping);
 	}
 
 	// Main ping loop

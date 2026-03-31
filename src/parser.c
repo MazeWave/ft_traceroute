@@ -6,6 +6,11 @@ void	print_echo_reply(t_ping *ping)
 {
 	AUTO_LOG;
 
+	if (!ping->replies)
+	{
+		LOG(RED "%s: No replies received yet.\n" RESET, ping->program_name);
+		return ;
+	}
 	t_replies	*reply = ping->replies;
 	while (reply->next)
 		reply = reply->next;
