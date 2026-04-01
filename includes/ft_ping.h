@@ -126,6 +126,7 @@ typedef struct	s_ping
 	uint32_t	packet_sent_count;
 	uint32_t	packet_recieved_count;
 	int			timeout;
+	int			linger;
 	int			sockfd;
 	float		interval;
 	uint8_t		*packet;

@@ -60,10 +60,12 @@ void	help(t_ping *ping)
 			printf("Options:\n");
 			printf("  -c <count>    : Set the number of pings to send\n");
 			printf("  -i <interval> : Set the interval between pings\n");
-			printf("  -w <timeout>  : Set the timeout for each ping\n");
+			printf("  -w <seconds>  : Set the timeout for each ping\n");
+			printf("  -W <seconds>  : Set the linger\n");
 			printf("  -l <count>    : Preload a set number of packets\n");
 			printf("  -r <count>    : Set the Time To Live (TTL)\n");
 			printf("  -f            : Floods packet as fast as possible\n");
+			printf("  -q            : Quiet mode\n");
 			printf("  -V            : Print the version\n");
 			printf("  -h -?         : Print the help\n");
 			return ;
@@ -103,6 +105,7 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->is_verbose = false;
 	ping->interval = 1;
 	ping->timeout = -1;
+	ping->linger = -1;
 	ping->ttl = 64;
 	ping->preload_count = 0;
 	ping->payload_length = PING_DEFAULT_DATA_LEN;
@@ -121,7 +124,7 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 	int	opt = 0;
 	static bool	has_already_printed_error = false;
 	// LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
-	while ((opt = getopt(argc, argv, "-h?Vvfql:w:r:i:c:")) != -1)
+	while ((opt = getopt(argc, argv, "-h?Vvfql:w:W:r:i:c:")) != -1)
 	{
 		// LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
 		switch (opt)
@@ -162,10 +165,15 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 				ping->ttl = atoi(optarg);
 				LOG(BLUE "ttl: %d" RESET, ping->ttl);
 				break;
+			case 'W':
+				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
+				if (atoi(optarg) <= 0) return (printf(RED "Error: Linger must be at least 1 second\n" RESET), help(ping), ping->exit_status = true);
+				ping->linger = atoi(optarg);
+				LOG(BLUE "linger: %d" RESET, ping->linger);
+				break;
 			case 'w':
 				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
 				if (atoi(optarg) <= 0) return(printf(RED "Error: Timeout must be at 1 least seconds\n" RESET), help(ping), ping->exit_status = true);
-				
 				ping->timeout = atoi(optarg);
 				LOG(BLUE "timeout: %d" RESET, ping->timeout);
 				break;

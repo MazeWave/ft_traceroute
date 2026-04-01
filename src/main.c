@@ -29,6 +29,7 @@ static void	ping_loop(t_ping *ping)
 	);
 	
 	struct timeval	timeout_start = get_time();
+
 	if (ping->is_verbose) printf(BLUE ", id 0x%x = %d\n" RESET, getpid() & 0xffff, getpid() & 0xffff);
 	else printf("\n");
 
@@ -94,17 +95,33 @@ static void	ping_loop(t_ping *ping)
 
 		// Account for interval
 		float	remaining = ping->interval - elapsed_time_in_seconds;
+		if (ping->timeout != -1)
+		{
+			struct timeval deadline = get_time();
+			remaining = ping->timeout - (deadline.tv_sec - timeout_start.tv_sec);
+		}
 		if (remaining > 0)
 		{
 			LOG(DEBUG RED "remaining : %f seconds" RESET, remaining);
 			struct timespec	ts;
 			ts.tv_sec = remaining;
-			ts.tv_nsec = remaining * 1000000000;
+			ts.tv_nsec = (remaining - ts.tv_sec) * 1000000000;
 			nanosleep(&ts, NULL);
 		}
 		ping->packet_sent_count++;
 	}
 
+	// Linger option
+	struct timeval	linger_start = get_time();
+	if (ping->linger != -1)
+	{
+		while (
+			   !did_we_exceed_in_seconds(linger_start, ping->linger)
+			&& !did_we_timeout(timeout_start, ping)
+			&& g_is_running
+		)
+			deserialize_icmp_packet(ping, linger_start);
+	}
 	print_end_statistics(ping);
 	return;
 }
