@@ -1,82 +1,6 @@
 #include "../includes/ft_ping.h"
-#include <stdio.h>
-#include <stdlib.h>
 
-void	print_echo_reply(t_ping *ping)
-{
-	AUTO_LOG;
 
-	if (!ping->replies)
-	{
-		LOG(RED "%s: No replies received yet.\n" RESET, ping->program_name);
-		return ;
-	}
-	t_replies	*reply = ping->replies;
-	while (reply->next)
-		reply = reply->next;
-
-	switch (ping->is_root)
-	{
-	case true:
-		printf(
-			GREEN "%u bytes from %s (%s): icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
-			reply->length,
-			reply->reversed_dns_str,
-			ping->ip_str,
-			reply->reply.sequence_number,
-			reply->ttl,
-			reply->elapsed_time_in_ms
-		);
-		return ;
-	case false:
-		printf(
-			GREEN "%u bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
-			reply->length,
-			ping->ip_str,
-			reply->reply.sequence_number,
-			reply->ttl,
-			reply->elapsed_time_in_ms
-		);
-		return ;
-	}
-}
-
-void	print_bits(uint32_t n)
-{
-	for (int i = 31; i >= 0; i--)
-	{
-		putchar((n >> i) & 1 ? '1' : '0');
-		if (i % 8 == 0)
-			putchar(' ');
-	}
-	putchar('\n');
-}
-
-void	print_packet_informations(t_ping *ping unused)
-{
-	AUTO_LOG;
-
-	LOG(CYAN "[HEADER]" RESET);
-	LOG(BLUE "Packet sequence: %d" RESET, ping->icmp_packet.sequence_number);
-	LOG(BLUE "Type: %d" RESET, ping->icmp_packet.type);
-	LOG(BLUE "Code: %d" RESET, ping->icmp_packet.code);
-	LOG(CYAN "Checksum: %d" RESET, ping->icmp_packet.checksum);
-	LOG(CYAN "Identifier: %d" RESET, ping->icmp_packet.identifier);
-	LOG(BLUE "[PAYLOAD]" RESET);
-	return ;
-}
-
-void    print_ping_struct(t_ping *ping unused)
-{
-	AUTO_LOG;
-	LOG(BLUE);
-	LOG("is_bonus: %d", ping->is_bonus);
-	LOG("is_root: %d", ping->is_root);
-	LOG("count: %d", ping->count);
-	LOG("hostname: %s", ping->hostname);
-	LOG("sockfd: %d", ping->sockfd);
-	LOG(RESET);
-}
 
 void	get_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping)
 {
@@ -97,7 +21,7 @@ void	get_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping)
 	}
 	LOG(GREEN "ip as int: %d" BLUE, ping->ip);
 	LOG(GREEN "ip as string: %s" BLUE, ip_str);
-	if (ping->is_root && ping->is_verbose) printf(YELLOW "ai->ai_family: AF_INET, ai->ai_canonname: '%s'\n" RESET, ping->hostname);
+	// if (ping->is_root && ping->is_verbose) printf(YELLOW "ai->ai_family: AF_INET, ai->ai_canonname: '%s'\n" RESET, ping->hostname);
 	return ;
 }
 
@@ -136,8 +60,6 @@ void	help(t_ping *ping)
 			printf("Options:\n");
 			printf("  -c <count>    : Set the number of pings to send\n");
 			printf("  -i <interval> : Set the interval between pings\n");
-			printf("  -p <pattern>  : Set the pattern to send in the payload\n");
-			printf("  -s <number>   : Set the packet size to send in bytes\n");
 			printf("  -w <timeout>  : Set the timeout for each ping\n");
 			printf("  -l <count>    : Preload a set number of packets\n");
 			printf("  -r <count>    : Set the Time To Live (TTL)\n");
@@ -170,6 +92,7 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->program_name = argv[0];
 	ping->is_bonus = (strstr(argv[0], "ft_ping_bonus") == NULL) ? false : true;
 	ping->is_root = (getuid() == 0);
+	ping->is_quiet = false;
 	ping->is_flooding = false;
 	ping->exit_status = false;
 	ping->hostname = NULL;
@@ -179,7 +102,7 @@ void	init_ping_struct(t_ping *ping, char **argv)
 	ping->payload_raw_string = NULL;
 	ping->is_verbose = false;
 	ping->interval = 1;
-	ping->timeout = 0;
+	ping->timeout = -1;
 	ping->ttl = 64;
 	ping->preload_count = 0;
 	ping->payload_length = PING_DEFAULT_DATA_LEN;
@@ -198,7 +121,7 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 	int	opt = 0;
 	static bool	has_already_printed_error = false;
 	// LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
-	while ((opt = getopt(argc, argv, "-h?Vvfl:w:r:p:s:i:c:")) != -1)
+	while ((opt = getopt(argc, argv, "-h?Vvfql:w:r:i:c:")) != -1)
 	{
 		// LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
 		switch (opt)
@@ -215,24 +138,24 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 				LOG(BLUE "interval: %f" RESET, ping->interval);
 				if (!ping->is_root && ping->interval < 0.2) return (printf(RED "Error: Interval must be greater than 0.2 seconds\n" RESET), help(ping), ping->exit_status = true);
 				break;
-			case 'p':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				ping->payload_length = strlen(optarg);
-				ping->payload_raw_string = optarg;
-				ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
-				LOG(BLUE "payload_length: %d" RESET, ping->payload_length);
-				LOG(BLUE "payload_raw_string: %s" RESET, ping->payload_raw_string);
-				LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
-				break;
-			case 's':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				ping->payload_length = strlen(optarg);
-				ping->payload_raw_string = optarg;
-				ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
-				LOG(BLUE "payload_length: %d" RESET, ping->payload_length);
-				LOG(BLUE "payload_raw_string: %s" RESET, ping->payload_raw_string);
-				LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
-				break;
+			// case 'p':
+			// 	if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
+			// 	ping->payload_length = strlen(optarg);
+			// 	ping->payload_raw_string = optarg;
+			// 	ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
+			// 	LOG(BLUE "payload_length: %d" RESET, ping->payload_length);
+			// 	LOG(BLUE "payload_raw_string: %s" RESET, ping->payload_raw_string);
+			// 	LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
+			// 	break;
+			// case 's':
+			// 	if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
+			// 	ping->payload_length = strlen(optarg);
+			// 	ping->payload_raw_string = optarg;
+			// 	ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
+			// 	LOG(BLUE "payload_length: %d" RESET, ping->payload_length);
+			// 	LOG(BLUE "payload_raw_string: %s" RESET, ping->payload_raw_string);
+			// 	LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
+			// 	break;
 			case 'r':
 				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
 				if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: Time To Live (TTL) must be between 1 and 255\n" RESET), help(ping), ping->exit_status = true);
@@ -241,6 +164,8 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 				break;
 			case 'w':
 				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
+				if (atoi(optarg) <= 0) return(printf(RED "Error: Timeout must be at 1 least seconds\n" RESET), help(ping), ping->exit_status = true);
+				
 				ping->timeout = atoi(optarg);
 				LOG(BLUE "timeout: %d" RESET, ping->timeout);
 				break;
@@ -258,6 +183,9 @@ int	parse_args(int argc, char **argv, t_ping *ping)
 				break;
 			case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging multicast address.
 				ping->is_verbose = true;
+				break;
+			case 'q':
+				ping->is_quiet = true;
 				break;
 			case 'V':
 				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);

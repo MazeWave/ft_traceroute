@@ -14,6 +14,7 @@ NAME	=	ft_ping
 NAME_B	=	ft_ping_bonus
 
 SRC		=	src/main.c \
+			src/utils.c \
 			src/log.c \
 			src/parser.c \
 			src/socket.c \

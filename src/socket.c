@@ -30,12 +30,9 @@ float	deserialize_icmp_packet(t_ping *ping, struct timeval start)
 		g_is_running = false;
 		return(-1.0);
 	}
-	struct timeval tv =
-	{
-		.tv_sec = 0,
-		// .tv_usec = 10000
-		.tv_usec = 0
-	};
+	struct timeval tv;
+	tv.tv_usec = (ping->is_flooding) ? 10000 : 0;
+	tv.tv_sec = 0;
 	if (ping->is_flooding || ping->preload_count > 0)
 	{
 		fd_set	read_fds;
@@ -174,7 +171,6 @@ int	create_icmp_socket(t_ping *ping)
 	tv.tv_usec = (ping->interval - tv.tv_sec) * 1000000.0;
 	setsockopt(ping->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));				// set socket to be non-blocking
 	setsockopt(ping->sockfd, IPPROTO_IP, IP_TTL, &ping->ttl, sizeof(ping->ttl));	// set the TTL
-	if (ping->is_root && ping->is_verbose) printf(YELLOW "ping: sock4.fd: 3 (socktype: SOCK_RAW), hints.ai_family: AF_INET\n" RESET);
 	return (EXIT_SUCCESS);
 }
 
