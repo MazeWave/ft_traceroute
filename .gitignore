@@ -6,3 +6,4 @@ ft_ping_bonus
 docs/
 ping_tester/
 deps/
+.claude/

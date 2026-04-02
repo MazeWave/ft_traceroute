@@ -67,6 +67,7 @@ void	help(t_ping *ping)
 			printf("  -f            : Floods packet as fast as possible\n");
 			printf("  -q            : Quiet mode\n");
 			printf("  -V            : Print the version\n");
+			printf("  -v            : Verbose output\n");
 			printf("  -h -?         : Print the help\n");
 			return ;
 		case false:

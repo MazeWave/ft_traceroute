@@ -107,12 +107,12 @@ typedef struct	s_ping
 	struct s_replies		*replies;
 	struct timeval			total_time_elapsed;
 
-	bool		is_bonus;
-	bool		is_root;
+	bool		exit_status;
 	bool		is_flooding;
 	bool		is_verbose;
 	bool		is_quiet;
-	bool		exit_status;
+	bool		is_bonus;
+	bool		is_root;
 	char		*program_name;
 	char		*hostname;
 	char		*ip_str;
@@ -120,11 +120,11 @@ typedef struct	s_ping
 	uint32_t	payload_length;
 	uint32_t	ip;
 	uint32_t	ttl;
+	uint32_t	packet_sent_count;
+	uint32_t	packet_recieved_count;
 	int			sequence;
 	int			count;
 	int			preload_count;
-	uint32_t	packet_sent_count;
-	uint32_t	packet_recieved_count;
 	int			timeout;
 	int			linger;
 	int			sockfd;
