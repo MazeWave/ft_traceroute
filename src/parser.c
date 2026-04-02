@@ -29,7 +29,6 @@ void	find_the_ip(t_ping *ping)
 {
 	AUTO_LOG;
 
-	// return;
 	struct addrinfo	*temp = ping->addr_info;
 	while (temp)
 	{
@@ -46,6 +45,7 @@ void	find_the_ip(t_ping *ping)
 		LOG(RESET);
 		temp = temp->ai_next;
 	}
+	return;
 }
 
 void	help(t_ping *ping)
@@ -78,7 +78,7 @@ void	help(t_ping *ping)
 			printf("  -h -?         : Print the help\n");
 			return ;
 	}
-	
+
 	return ;
 }
 

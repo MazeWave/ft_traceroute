@@ -18,9 +18,6 @@ static void	ping_loop(t_ping *ping)
 {
 	AUTO_LOG;
 
-	signal(SIGINT, &handle_sigint);
-	signal(SIGQUIT, &handle_sigint);
-
 	printf(
 		BLUE "PING %s (%s): %u data bytes" RESET,
 		ping->hostname,
@@ -98,7 +95,10 @@ static void	ping_loop(t_ping *ping)
 		if (ping->timeout != -1)
 		{
 			struct timeval deadline = get_time();
-			remaining = ping->timeout - (deadline.tv_sec - timeout_start.tv_sec);
+			// remaining = ping->timeout - (deadline.tv_sec - timeout_start.tv_sec);
+			float deadline_time = ping->timeout - (deadline.tv_sec - timeout_start.tv_sec);
+			if (deadline_time < remaining)
+				remaining = deadline_time;
 		}
 		if (remaining > 0)
 		{
@@ -163,6 +163,9 @@ int	main(int argc, char **argv unused)
 
 	if (argc < 2)
 		return (help(ping), EXIT_FAILURE);
+
+	signal(SIGINT, &handle_sigint);
+	signal(SIGQUIT, &handle_sigint);
 
 	if (parse_args(argc, argv, ping) == EXIT_FAILURE) return (ping->exit_status);
 	if (create_icmp_socket(ping) == EXIT_FAILURE) return (EXIT_FAILURE);
