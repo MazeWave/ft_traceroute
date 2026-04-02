@@ -97,6 +97,7 @@ void	print_echo_reply(t_ping *ping)
 	while (reply->next)
 		reply = reply->next;
 
+	if (ping->is_quiet) return ;
 	printf(
 		GREEN "%u bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
 		reply->length,
