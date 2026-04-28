@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/04/28 17:14:46 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/04/28 19:18:09 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,48 +27,6 @@ static void	ping_loop(t_tr *tr)
 	
 	struct timeval	timeout_start = get_time();
 
-	// if (tr->is_verbose) printf(BLUE ", id 0x%x = %d\n" RESET, getpid() & 0xffff, getpid() & 0xffff);
-	// else printf("\n");
-
-	// Flooding option
-	// while (tr->is_flooding && g_is_running)
-	// {
-	// 	if (did_we_timeout(timeout_start, ping)) break;
-	// 	if (tr->count == 0) break;
-	// 	struct timeval	start = get_time();
-	// 	build_ping_packet(ping);
-	// 	printf(".");
-	// 	fflush(stdout);
-	// 	send_ping(ping);
-	// 	tr->packet_sent_count++;
-	// 	if (tr->count != -1) tr->count--;
-	// 	float ret = 0.0;
-	// 	while ((ret = deserialize_icmp_packet(ping, start)) > 0.0)
-	// 	{
-	// 		if (did_we_timeout(timeout_start, ping)) break;
-	// 		printf("\b");
-	// 		fflush(stdout);
-	// 	}
-	// }
-
-	// Preload option
-	// if (tr->preload_count > 0)
-	// {
-	// 	for (int i = 0; i < tr->preload_count; i++)
-	// 	{
-	// 		if (did_we_timeout(timeout_start, ping)) g_is_running = false;
-	// 		if (!g_is_running) break;
-	// 		build_ping_packet(ping);
-	// 		send_ping(ping);
-	// 		tr->packet_sent_count++;
-	// 		if (tr->count > 0) tr->count--;
-	// 	}
-	// 	tr->preload_count = 0;
-	// 	struct timeval	start = get_time();
-	// 	while (deserialize_icmp_packet(ping, start) > 0.0)
-	// 		print_echo_reply(ping);
-	// }
-
 	// Main ping loop
 	while (g_is_running)
 	{
@@ -84,7 +42,7 @@ static void	ping_loop(t_tr *tr)
 		struct timeval	start = get_time();
 		send_packet(tr);
 
-		// Listen to the echo replay
+		// Listen to the echo reply
 		float	elapsed_time_in_seconds = deserialize_icmp_packet(tr, start);
 
 		// Recieve the echo icmp packet and display timings

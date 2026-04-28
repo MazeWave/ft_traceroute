@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:11:05 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/04/28 19:13:17 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/04/28 19:24:29 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,27 +95,28 @@ void init_ping_struct(t_tr *tr, char **argv) {
   tr->is_bonus =
       (strstr(argv[0], "ft_traceroute_bonus") == NULL) ? false : true;
   tr->is_root = (getuid() == 0);
-  tr->is_quiet = false;
-  tr->is_flooding = false;
+  // tr->is_quiet = false;
+  // tr->is_flooding = false;
   tr->exit_status = false;
   tr->hostname = NULL;
   tr->ip_str = NULL;
   tr->addr_info = NULL;
   tr->replies = NULL;
   tr->payload_raw_string = NULL;
-  tr->is_verbose = false;
-  tr->interval = 1;
+  // tr->is_verbose = false;
+  tr->interval = 3;
   tr->timeout = -1;
-  tr->linger = -1;
+  // tr->linger = -1;
   tr->ttl = 64;
+  tr->port = 33434;
   tr->preload_count = 0;
   tr->payload_length = PING_DEFAULT_DATA_LEN;
   tr->ip = 0;
   tr->count = -1;
   tr->packet = NULL;
   tr->packet_len = sizeof(t_icmp_header) + tr->payload_length;
-  tr->packet_sent_count = 0;
-  tr->packet_recieved_count = 0;
+  // tr->packet_sent_count = 0;
+  // tr->packet_recieved_count = 0;
   gettimeofday(&tr->total_time_elapsed, NULL);
 }
 
@@ -147,24 +148,6 @@ int parse_args(int argc, char **argv, t_tr *tr) {
                    "Error: Interval must be greater than 0.2 seconds\n" RESET),
             help(tr), tr->exit_status = true);
       break;
-    // case 'p':
-    // 	if (!tr->is_bonus) return(help(ping), tr->exit_status = true);
-    // 	tr->payload_length = strlen(optarg);
-    // 	tr->payload_raw_string = optarg;
-    // 	tr->packet_len = (sizeof(t_icmp_header)) + tr->payload_length;
-    // 	LOG(BLUE "payload_length: %d" RESET, tr->payload_length);
-    // 	LOG(BLUE "payload_raw_string: %s" RESET, tr->payload_raw_string);
-    // 	LOG(BLUE "packet_len: %d" RESET, tr->packet_len);
-    // 	break;
-    // case 's':
-    // 	if (!tr->is_bonus) return(help(ping), tr->exit_status = true);
-    // 	tr->payload_length = strlen(optarg);
-    // 	tr->payload_raw_string = optarg;
-    // 	tr->packet_len = (sizeof(t_icmp_header)) + tr->payload_length;
-    // 	LOG(BLUE "payload_length: %d" RESET, tr->payload_length);
-    // 	LOG(BLUE "payload_raw_string: %s" RESET, tr->payload_raw_string);
-    // 	LOG(BLUE "packet_len: %d" RESET, tr->packet_len);
-    // 	break;
     case 'r':
       if (!tr->is_bonus)
         return (help(tr), tr->exit_status = true);
@@ -177,15 +160,15 @@ int parse_args(int argc, char **argv, t_tr *tr) {
       tr->ttl = atoi(optarg);
       LOG(BLUE "ttl: %d" RESET, tr->ttl);
       break;
-    case 'W':
-      if (!tr->is_bonus)
-        return (help(tr), tr->exit_status = true);
-      if (atoi(optarg) <= 0)
-        return (printf(RED "Error: Linger must be at least 1 second\n" RESET),
-                help(tr), tr->exit_status = true);
-      tr->linger = atoi(optarg);
-      LOG(BLUE "linger: %d" RESET, tr->linger);
-      break;
+    // case 'W':
+    //   if (!tr->is_bonus)
+    //     return (help(tr), tr->exit_status = true);
+    //   if (atoi(optarg) <= 0)
+    //     return (printf(RED "Error: Linger must be at least 1 second\n" RESET),
+    //             help(tr), tr->exit_status = true);
+    //   tr->linger = atoi(optarg);
+    //   LOG(BLUE "linger: %d" RESET, tr->linger);
+    //   break;
     case 'w':
       if (!tr->is_bonus)
         return (help(tr), tr->exit_status = true);
@@ -195,15 +178,15 @@ int parse_args(int argc, char **argv, t_tr *tr) {
       tr->timeout = atoi(optarg);
       LOG(BLUE "timeout: %d" RESET, tr->timeout);
       break;
-    case 'f':
-      if (!tr->is_bonus)
-        return (help(tr), tr->exit_status = false, EXIT_FAILURE);
-      if (!tr->is_root)
-        return (printf(RED "Error: Flooding require root privileges\n" RESET),
-                help(tr), tr->exit_status = false, EXIT_FAILURE);
-      tr->is_flooding = true;
-      LOG(BLUE "is_flooding: %d" RESET, tr->is_flooding);
-      break;
+    // case 'f':
+    //   if (!tr->is_bonus)
+    //     return (help(tr), tr->exit_status = false, EXIT_FAILURE);
+    //   if (!tr->is_root)
+    //     return (printf(RED "Error: Flooding require root privileges\n" RESET),
+    //             help(tr), tr->exit_status = false, EXIT_FAILURE);
+    //   tr->is_flooding = true;
+    //   LOG(BLUE "is_flooding: %d" RESET, tr->is_flooding);
+    //   break;
     case 'l':
       if (!tr->is_bonus)
         return (help(tr), tr->exit_status = true);
@@ -215,13 +198,13 @@ int parse_args(int argc, char **argv, t_tr *tr) {
             help(tr), tr->exit_status = true);
       LOG(BLUE "preload_count: %d" RESET, tr->preload_count);
       break;
-    case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging
-              // multicast address.
-      tr->is_verbose = true;
-      break;
-    case 'q':
-      tr->is_quiet = true;
-      break;
+    // case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging
+    //           // multicast address.
+    //   tr->is_verbose = true;
+    //   break;
+    // case 'q':
+    //   tr->is_quiet = true;
+    //   break;
     case 'V':
       if (!tr->is_bonus)
         return (help(tr), tr->exit_status = true);
@@ -234,10 +217,10 @@ int parse_args(int argc, char **argv, t_tr *tr) {
 
       if (tr->hostname == NULL)
         tr->hostname = optarg;
-      else if (tr->is_verbose)
-        if (!has_already_printed_error++)
-          printf(RED "Error: Multiple hostnames provided. Only the first one "
-                     "will be used.\n" RESET);
+      // else if (tr->is_verbose)
+      //   if (!has_already_printed_error++)
+      //     printf(RED "Error: Multiple hostnames provided. Only the first one "
+      //                "will be used.\n" RESET);
       LOG(RED "Used Hostname: %s" RESET, tr->hostname);
       LOG(RED "Current read Hostname: %s" RESET, optarg);
       break;
