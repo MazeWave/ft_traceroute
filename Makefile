@@ -5,13 +5,13 @@
 #                                                     +:+ +:+         +:+      #
 #    By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/01/09 11:23:20 by maze              #+#    #+#              #
-#    Updated: 2026/03/25 15:57:04 by ldalmass         ###   ########.fr        #
+#    Created: 2026/04/28 17:11:28 by ldalmass          #+#    #+#              #
+#    Updated: 2026/04/28 17:11:34 by ldalmass         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME	=	ft_ping
-NAME_B	=	ft_ping_bonus
+NAME	=	ft_traceroute
+NAME_B	=	ft_traceroute_bonus
 
 SRC		=	src/main.c \
 			src/utils.c \
@@ -24,8 +24,14 @@ OBJS	=	$(SRC:.c=.o)
 
 CC		=	gcc
 
-# CFLAGS	=	-Wall -Wextra -Werror -DPRINT_LOGS -std=c23 -D_POSIX_C_SOURCE=200809L -lm -fsanitize=address
-CFLAGS	=	-Wall -Wextra -Werror -std=c23 -D_POSIX_C_SOURCE=200809L
+UNAME_S	:=	$(shell uname -s)
+
+CFLAGS	=	-Wall -Wextra -Werror -DPRINT_LOGS -std=c23 -D_POSIX_C_SOURCE=200809L -fsanitize=address
+# CFLAGS	=	-Wall -Wextra -Werror -std=c23 -D_POSIX_C_SOURCE=200809L
+
+ifeq ($(UNAME_S),Darwin)
+	CFLAGS	+=	-D_DARWIN_C_SOURCE
+endif
 
 RM		=	rm -rf
 

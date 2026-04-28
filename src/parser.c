@@ -1,217 +1,247 @@
-#include "../includes/ft_ping.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/28 17:11:05 by ldalmass          #+#    #+#             */
+/*   Updated: 2026/04/28 19:13:17 by ldalmass         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
+#include "../includes/ft_traceroute.h"
 
+void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr) {
+  AUTO_LOG;
 
-void	get_sockaddr(struct sockaddr_in *ai_addr, t_ping *ping)
-{
-	AUTO_LOG;
+  char ip_str[INET_ADDRSTRLEN];
+  inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
 
-	char ip_str[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
-
-	// set the ip
-	ping->ip = ai_addr->sin_addr.s_addr;
-	if (ping->ip_str) free(ping->ip_str);
-	ping->ip_str = strndup(ip_str, INET_ADDRSTRLEN);
-	if (!ping->ip_str)
-	{
-		LOG(RED "%s: malloc: Failed to allocate memory for ip string.\n" RESET, ping->program_name);
-		ping->ip_str = NULL;
-		return ;
-	}
-	LOG(GREEN "ip as int: %d" BLUE, ping->ip);
-	LOG(GREEN "ip as string: %s" BLUE, ip_str);
-	// if (ping->is_root && ping->is_verbose) printf(YELLOW "ai->ai_family: AF_INET, ai->ai_canonname: '%s'\n" RESET, ping->hostname);
-	return ;
+  // set the ip
+  tr->ip = ai_addr->sin_addr.s_addr;
+  if (tr->ip_str)
+    free(tr->ip_str);
+  tr->ip_str = strndup(ip_str, INET_ADDRSTRLEN);
+  if (!tr->ip_str) {
+    LOG(RED "%s: malloc: Failed to allocate memory for ip string.\n" RESET,
+        tr->program_name);
+    tr->ip_str = NULL;
+    return;
+  }
+  LOG(GREEN "ip as int: %d" BLUE, tr->ip);
+  LOG(GREEN "ip as string: %s" BLUE, ip_str);
+  // if (tr->is_root && tr->is_verbose) printf(YELLOW "ai->ai_family: AF_INET,
+  // ai->ai_canonname: '%s'\n" RESET, tr->hostname);
+  return;
 }
 
-void	find_the_ip(t_ping *ping)
-{
-	AUTO_LOG;
+void find_the_ip(t_tr *tr) {
+  AUTO_LOG;
 
-	struct addrinfo	*temp = ping->addr_info;
-	while (temp)
-	{
-		LOG(BLUE);
-		LOG("--------------------------------");
-		LOG("ai_canonname: %s", temp->ai_canonname);
-		LOG("ai_family: %d", temp->ai_family);
-		LOG("ai_socktype: %d", temp->ai_socktype);
-		LOG("ai_protocol: %d", temp->ai_protocol);
-		LOG("ai_addrlen: %d", temp->ai_addrlen);
-		LOG("ai_addr: %p", temp->ai_addr);
-		get_sockaddr((struct sockaddr_in *)temp->ai_addr, ping);
-		LOG("ai_canonname: %s", temp->ai_canonname);
-		LOG(RESET);
-		temp = temp->ai_next;
-	}
-	return;
+  struct addrinfo *temp = tr->addr_info;
+  while (temp) {
+    LOG(BLUE);
+    LOG("--------------------------------");
+    LOG("ai_canonname: %s", temp->ai_canonname);
+    LOG("ai_family: %d", temp->ai_family);
+    LOG("ai_socktype: %d", temp->ai_socktype);
+    LOG("ai_protocol: %d", temp->ai_protocol);
+    LOG("ai_addrlen: %d", temp->ai_addrlen);
+    LOG("ai_addr: %p", temp->ai_addr);
+    get_sockaddr((struct sockaddr_in *)temp->ai_addr, tr);
+    LOG("ai_canonname: %s", temp->ai_canonname);
+    LOG(RESET);
+    temp = temp->ai_next;
+  }
+  return;
 }
 
-void	help(t_ping *ping)
-{
-	AUTO_LOG;
+void help(t_tr *tr) {
+  AUTO_LOG;
 
-	switch(ping->is_bonus)
-	{
-		case true:
-			printf(GREEN "Usage: %s <hostname> [options]\n" RESET, ping->program_name);
-		
-			printf("Options:\n");
-			printf("  -c <count>    : Set the number of pings to send\n");
-			printf("  -i <interval> : Set the interval between pings\n");
-			printf("  -w <seconds>  : Set the timeout for each ping\n");
-			printf("  -W <seconds>  : Set the linger\n");
-			printf("  -l <count>    : Preload a set number of packets\n");
-			printf("  -r <count>    : Set the Time To Live (TTL)\n");
-			printf("  -f            : Floods packet as fast as possible\n");
-			printf("  -q            : Quiet mode\n");
-			printf("  -V            : Print the version\n");
-			printf("  -v            : Verbose output\n");
-			printf("  -h -?         : Print the help\n");
-			return ;
-		case false:
-			printf(GREEN "Usage: %s <hostname> [options]\n" RESET, ping->program_name);
-		
-			printf("Options:\n");
-			printf("  -v            : Verbose output\n");
-			printf("  -h -?         : Print the help\n");
-			return ;
-	}
+  switch (tr->is_bonus) {
+  case true:
+    printf(GREEN "Usage: %s <hostname> [options]\n" RESET, tr->program_name);
 
-	return ;
+    printf("Options:\n");
+    printf("  -m            : Set maximal hop count (default: 64)\n");
+    printf("  -q            : Send NUM probe packets per hop (default: 3)\n");
+    printf("  -w            : Wait NUM seconds for response (default: 3)\n");
+    printf("  -f            : Set initial hop distance, i.e., time-to-live\n");
+    printf("  -p            : Use destination PORT port (default: 33434)\n");
+    printf("  -h -?         : Print the help\n");
+    return;
+  case false:
+    printf(GREEN "Usage: %s <hostname> [options]\n" RESET, tr->program_name);
+
+    printf("Options:\n");
+    printf("  -h -?         : Print the help\n");
+    return;
+  }
+
+  return;
 }
 
-void	version(void)
-{
-	AUTO_LOG;
-	LOG(GREEN "ft_ping -- ldalmass -- version: 7.7.7" RESET);
+void version(void) {
+  AUTO_LOG;
+  LOG(GREEN "ft_ping -- ldalmass -- version: 7.7.7" RESET);
 }
 
-void	init_ping_struct(t_ping *ping, char **argv)
-{
-	AUTO_LOG;
+void init_ping_struct(t_tr *tr, char **argv) {
+  AUTO_LOG;
 
-	ping->program_name = argv[0];
-	ping->is_bonus = (strstr(argv[0], "ft_ping_bonus") == NULL) ? false : true;
-	ping->is_root = (getuid() == 0);
-	ping->is_quiet = false;
-	ping->is_flooding = false;
-	ping->exit_status = false;
-	ping->hostname = NULL;
-	ping->ip_str = NULL;
-	ping->addr_info = NULL;
-	ping->replies = NULL;
-	ping->payload_raw_string = NULL;
-	ping->is_verbose = false;
-	ping->interval = 1;
-	ping->timeout = -1;
-	ping->linger = -1;
-	ping->ttl = 64;
-	ping->preload_count = 0;
-	ping->payload_length = PING_DEFAULT_DATA_LEN;
-	ping->ip = 0;
-	ping->count = -1;
-	ping->packet = NULL;
-	ping->packet_len = sizeof(t_icmp_header) + ping->payload_length;
-	ping->packet_sent_count = 0;
-	ping->packet_recieved_count = 0;
-	gettimeofday(&ping->total_time_elapsed, NULL);
+  tr->program_name = argv[0];
+  tr->is_bonus =
+      (strstr(argv[0], "ft_traceroute_bonus") == NULL) ? false : true;
+  tr->is_root = (getuid() == 0);
+  tr->is_quiet = false;
+  tr->is_flooding = false;
+  tr->exit_status = false;
+  tr->hostname = NULL;
+  tr->ip_str = NULL;
+  tr->addr_info = NULL;
+  tr->replies = NULL;
+  tr->payload_raw_string = NULL;
+  tr->is_verbose = false;
+  tr->interval = 1;
+  tr->timeout = -1;
+  tr->linger = -1;
+  tr->ttl = 64;
+  tr->preload_count = 0;
+  tr->payload_length = PING_DEFAULT_DATA_LEN;
+  tr->ip = 0;
+  tr->count = -1;
+  tr->packet = NULL;
+  tr->packet_len = sizeof(t_icmp_header) + tr->payload_length;
+  tr->packet_sent_count = 0;
+  tr->packet_recieved_count = 0;
+  gettimeofday(&tr->total_time_elapsed, NULL);
 }
 
-int	parse_args(int argc, char **argv, t_ping *ping)
-{
-	AUTO_LOG;
-	int	opt = 0;
-	static bool	has_already_printed_error = false;
-	// LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
-	while ((opt = getopt(argc, argv, "-h?Vvfql:w:W:r:i:c:")) != -1)
-	{
-		// LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
-		switch (opt)
-		{
-			case 'c':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				ping->count = atoi(optarg);
-				LOG(BLUE "count: %d" RESET, ping->count);
-				if (ping->count <= 0) return (printf(RED "Error: Count must be greater than 0\n" RESET), help(ping), ping->exit_status = true);
-				break;
-			case 'i':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				ping->interval = atof(optarg);
-				LOG(BLUE "interval: %f" RESET, ping->interval);
-				if (!ping->is_root && ping->interval < 0.2) return (printf(RED "Error: Interval must be greater than 0.2 seconds\n" RESET), help(ping), ping->exit_status = true);
-				break;
-			// case 'p':
-			// 	if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-			// 	ping->payload_length = strlen(optarg);
-			// 	ping->payload_raw_string = optarg;
-			// 	ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
-			// 	LOG(BLUE "payload_length: %d" RESET, ping->payload_length);
-			// 	LOG(BLUE "payload_raw_string: %s" RESET, ping->payload_raw_string);
-			// 	LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
-			// 	break;
-			// case 's':
-			// 	if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-			// 	ping->payload_length = strlen(optarg);
-			// 	ping->payload_raw_string = optarg;
-			// 	ping->packet_len = (sizeof(t_icmp_header)) + ping->payload_length;
-			// 	LOG(BLUE "payload_length: %d" RESET, ping->payload_length);
-			// 	LOG(BLUE "payload_raw_string: %s" RESET, ping->payload_raw_string);
-			// 	LOG(BLUE "packet_len: %d" RESET, ping->packet_len);
-			// 	break;
-			case 'r':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: Time To Live (TTL) must be between 1 and 255\n" RESET), help(ping), ping->exit_status = true);
-				ping->ttl = atoi(optarg);
-				LOG(BLUE "ttl: %d" RESET, ping->ttl);
-				break;
-			case 'W':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				if (atoi(optarg) <= 0) return (printf(RED "Error: Linger must be at least 1 second\n" RESET), help(ping), ping->exit_status = true);
-				ping->linger = atoi(optarg);
-				LOG(BLUE "linger: %d" RESET, ping->linger);
-				break;
-			case 'w':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				if (atoi(optarg) <= 0) return(printf(RED "Error: Timeout must be at 1 least seconds\n" RESET), help(ping), ping->exit_status = true);
-				ping->timeout = atoi(optarg);
-				LOG(BLUE "timeout: %d" RESET, ping->timeout);
-				break;
-			case 'f':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = false, EXIT_FAILURE);
-				if (!ping->is_root) return (printf(RED "Error: Flooding require root privileges\n" RESET), help(ping), ping->exit_status = false, EXIT_FAILURE);
-				ping->is_flooding = true;
-				LOG(BLUE "is_flooding: %d" RESET, ping->is_flooding);
-				break;
-			case 'l':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				ping->preload_count = atoi(optarg);
-				if (ping->preload_count > 3 && !ping->is_root) return (printf(RED "Error: Preload option requires root privileges\n" RESET), help(ping), ping->exit_status = true);
-				LOG(BLUE "preload_count: %d" RESET, ping->preload_count);
-				break;
-			case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging multicast address.
-				ping->is_verbose = true;
-				break;
-			case 'q':
-				ping->is_quiet = true;
-				break;
-			case 'V':
-				if (!ping->is_bonus) return(help(ping), ping->exit_status = true);
-				return (version(), ping->exit_status = false, EXIT_FAILURE);
-			case 'h':
-				return (help(ping), ping->exit_status = false, EXIT_FAILURE);
-			case '?':
-				return (help(ping), ping->exit_status = false, EXIT_FAILURE);
-			default:
-				
-				if (ping->hostname == NULL) ping->hostname = optarg;
-				else if (ping->is_verbose)
-					if (!has_already_printed_error++) printf(RED "Error: Multiple hostnames provided. Only the first one will be used.\n" RESET);
-				LOG(RED "Used Hostname: %s" RESET, ping->hostname);
-				LOG(RED "Current read Hostname: %s" RESET, optarg);
-				break;
-		}
-	}
-	return (EXIT_SUCCESS);
+int parse_args(int argc, char **argv, t_tr *tr) {
+  AUTO_LOG;
+  int opt = 0;
+  static bool has_already_printed_error = false;
+  // LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
+  while ((opt = getopt(argc, argv, "-h?Vvfql:w:W:r:i:c:")) != -1) {
+    // LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
+    switch (opt) {
+    case 'c':
+      if (!tr->is_bonus)
+        return (help(tr), tr->exit_status = true);
+      tr->count = atoi(optarg);
+      LOG(BLUE "count: %d" RESET, tr->count);
+      if (tr->count <= 0)
+        return (printf(RED "Error: Count must be greater than 0\n" RESET),
+                help(tr), tr->exit_status = true);
+      break;
+    case 'i':
+      if (!tr->is_bonus)
+        return (help(tr), tr->exit_status = true);
+      tr->interval = atof(optarg);
+      LOG(BLUE "interval: %f" RESET, tr->interval);
+      if (!tr->is_root && tr->interval < 0.2)
+        return (
+            printf(RED
+                   "Error: Interval must be greater than 0.2 seconds\n" RESET),
+            help(tr), tr->exit_status = true);
+      break;
+    // case 'p':
+    // 	if (!tr->is_bonus) return(help(ping), tr->exit_status = true);
+    // 	tr->payload_length = strlen(optarg);
+    // 	tr->payload_raw_string = optarg;
+    // 	tr->packet_len = (sizeof(t_icmp_header)) + tr->payload_length;
+    // 	LOG(BLUE "payload_length: %d" RESET, tr->payload_length);
+    // 	LOG(BLUE "payload_raw_string: %s" RESET, tr->payload_raw_string);
+    // 	LOG(BLUE "packet_len: %d" RESET, tr->packet_len);
+    // 	break;
+    // case 's':
+    // 	if (!tr->is_bonus) return(help(ping), tr->exit_status = true);
+    // 	tr->payload_length = strlen(optarg);
+    // 	tr->payload_raw_string = optarg;
+    // 	tr->packet_len = (sizeof(t_icmp_header)) + tr->payload_length;
+    // 	LOG(BLUE "payload_length: %d" RESET, tr->payload_length);
+    // 	LOG(BLUE "payload_raw_string: %s" RESET, tr->payload_raw_string);
+    // 	LOG(BLUE "packet_len: %d" RESET, tr->packet_len);
+    // 	break;
+    case 'r':
+      if (!tr->is_bonus)
+        return (help(tr), tr->exit_status = true);
+      if (atoi(optarg) <= 0 || atoi(optarg) > 255)
+        return (
+            printf(
+                RED
+                "Error: Time To Live (TTL) must be between 1 and 255\n" RESET),
+            help(tr), tr->exit_status = true);
+      tr->ttl = atoi(optarg);
+      LOG(BLUE "ttl: %d" RESET, tr->ttl);
+      break;
+    case 'W':
+      if (!tr->is_bonus)
+        return (help(tr), tr->exit_status = true);
+      if (atoi(optarg) <= 0)
+        return (printf(RED "Error: Linger must be at least 1 second\n" RESET),
+                help(tr), tr->exit_status = true);
+      tr->linger = atoi(optarg);
+      LOG(BLUE "linger: %d" RESET, tr->linger);
+      break;
+    case 'w':
+      if (!tr->is_bonus)
+        return (help(tr), tr->exit_status = true);
+      if (atoi(optarg) <= 0)
+        return (printf(RED "Error: Timeout must be at 1 least seconds\n" RESET),
+                help(tr), tr->exit_status = true);
+      tr->timeout = atoi(optarg);
+      LOG(BLUE "timeout: %d" RESET, tr->timeout);
+      break;
+    case 'f':
+      if (!tr->is_bonus)
+        return (help(tr), tr->exit_status = false, EXIT_FAILURE);
+      if (!tr->is_root)
+        return (printf(RED "Error: Flooding require root privileges\n" RESET),
+                help(tr), tr->exit_status = false, EXIT_FAILURE);
+      tr->is_flooding = true;
+      LOG(BLUE "is_flooding: %d" RESET, tr->is_flooding);
+      break;
+    case 'l':
+      if (!tr->is_bonus)
+        return (help(tr), tr->exit_status = true);
+      tr->preload_count = atoi(optarg);
+      if (tr->preload_count > 3 && !tr->is_root)
+        return (
+            printf(RED
+                   "Error: Preload option requires root privileges\n" RESET),
+            help(tr), tr->exit_status = true);
+      LOG(BLUE "preload_count: %d" RESET, tr->preload_count);
+      break;
+    case 'v': // to do: Verbose output. Do not suppress DUP replies when pinging
+              // multicast address.
+      tr->is_verbose = true;
+      break;
+    case 'q':
+      tr->is_quiet = true;
+      break;
+    case 'V':
+      if (!tr->is_bonus)
+        return (help(tr), tr->exit_status = true);
+      return (version(), tr->exit_status = false, EXIT_FAILURE);
+    case 'h':
+      return (help(tr), tr->exit_status = false, EXIT_FAILURE);
+    case '?':
+      return (help(tr), tr->exit_status = false, EXIT_FAILURE);
+    default:
+
+      if (tr->hostname == NULL)
+        tr->hostname = optarg;
+      else if (tr->is_verbose)
+        if (!has_already_printed_error++)
+          printf(RED "Error: Multiple hostnames provided. Only the first one "
+                     "will be used.\n" RESET);
+      LOG(RED "Used Hostname: %s" RESET, tr->hostname);
+      LOG(RED "Current read Hostname: %s" RESET, optarg);
+      break;
+    }
+  }
+  return (EXIT_SUCCESS);
 }

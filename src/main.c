@@ -6,97 +6,97 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/03/25 18:37:19 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/04/28 17:14:46 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/ft_ping.h"
+#include "../includes/ft_traceroute.h"
 
 volatile bool	g_is_running = true;
 
-static void	ping_loop(t_ping *ping)
+static void	ping_loop(t_tr *tr)
 {
 	AUTO_LOG;
 
-	printf(
-		BLUE "PING %s (%s): %u data bytes" RESET,
-		ping->hostname,
-		ping->ip_str,
-		ping->payload_length
-	);
+	// printf(
+	// 	BLUE "PING %s (%s): %u data bytes" RESET,
+	// 	tr->hostname,
+	// 	tr->ip_str,
+	// 	tr->payload_length
+	// );
 	
 	struct timeval	timeout_start = get_time();
 
-	if (ping->is_verbose) printf(BLUE ", id 0x%x = %d\n" RESET, getpid() & 0xffff, getpid() & 0xffff);
-	else printf("\n");
+	// if (tr->is_verbose) printf(BLUE ", id 0x%x = %d\n" RESET, getpid() & 0xffff, getpid() & 0xffff);
+	// else printf("\n");
 
 	// Flooding option
-	while (ping->is_flooding && g_is_running)
-	{
-		if (did_we_timeout(timeout_start, ping)) break;
-		if (ping->count == 0) break;
-		struct timeval	start = get_time();
-		build_ping_packet(ping);
-		printf(".");
-		fflush(stdout);
-		send_ping(ping);
-		ping->packet_sent_count++;
-		if (ping->count != -1) ping->count--;
-		float ret = 0.0;
-		while ((ret = deserialize_icmp_packet(ping, start)) > 0.0)
-		{
-			if (did_we_timeout(timeout_start, ping)) break;
-			printf("\b");
-			fflush(stdout);
-		}
-	}
+	// while (tr->is_flooding && g_is_running)
+	// {
+	// 	if (did_we_timeout(timeout_start, ping)) break;
+	// 	if (tr->count == 0) break;
+	// 	struct timeval	start = get_time();
+	// 	build_ping_packet(ping);
+	// 	printf(".");
+	// 	fflush(stdout);
+	// 	send_ping(ping);
+	// 	tr->packet_sent_count++;
+	// 	if (tr->count != -1) tr->count--;
+	// 	float ret = 0.0;
+	// 	while ((ret = deserialize_icmp_packet(ping, start)) > 0.0)
+	// 	{
+	// 		if (did_we_timeout(timeout_start, ping)) break;
+	// 		printf("\b");
+	// 		fflush(stdout);
+	// 	}
+	// }
 
 	// Preload option
-	if (ping->preload_count > 0)
-	{
-		for (int i = 0; i < ping->preload_count; i++)
-		{
-			if (did_we_timeout(timeout_start, ping)) g_is_running = false;
-			if (!g_is_running) break;
-			build_ping_packet(ping);
-			send_ping(ping);
-			ping->packet_sent_count++;
-			if (ping->count > 0) ping->count--;
-		}
-		ping->preload_count = 0;
-		struct timeval	start = get_time();
-		while (deserialize_icmp_packet(ping, start) > 0.0)
-			print_echo_reply(ping);
-	}
+	// if (tr->preload_count > 0)
+	// {
+	// 	for (int i = 0; i < tr->preload_count; i++)
+	// 	{
+	// 		if (did_we_timeout(timeout_start, ping)) g_is_running = false;
+	// 		if (!g_is_running) break;
+	// 		build_ping_packet(ping);
+	// 		send_ping(ping);
+	// 		tr->packet_sent_count++;
+	// 		if (tr->count > 0) tr->count--;
+	// 	}
+	// 	tr->preload_count = 0;
+	// 	struct timeval	start = get_time();
+	// 	while (deserialize_icmp_packet(ping, start) > 0.0)
+	// 		print_echo_reply(ping);
+	// }
 
 	// Main ping loop
 	while (g_is_running)
 	{
-		if (did_we_timeout(timeout_start, ping)) g_is_running = false;
-		if (ping->count == 0) break;
-		if (ping->count != -1) ping->count--;
+		if (did_we_timeout(timeout_start, tr)) g_is_running = false;
+		if (tr->count == 0) break;
+		if (tr->count != -1) tr->count--;
 		if (!g_is_running) break;
 
 		// Build the ping packet
-		build_ping_packet(ping);
+		build_ping_packet(tr);
 
 		// Send the ping
 		struct timeval	start = get_time();
-		send_ping(ping);
+		send_packet(tr);
 
 		// Listen to the echo replay
-		float	elapsed_time_in_seconds = deserialize_icmp_packet(ping, start);
+		float	elapsed_time_in_seconds = deserialize_icmp_packet(tr, start);
 
 		// Recieve the echo icmp packet and display timings
-		print_echo_reply(ping);
+		print_echo_reply(tr);
 
 		// Account for interval
-		float	remaining = ping->interval - elapsed_time_in_seconds;
-		if (ping->timeout != -1)
+		float	remaining = tr->interval - elapsed_time_in_seconds;
+		if (tr->timeout != -1)
 		{
 			struct timeval deadline = get_time();
-			// remaining = ping->timeout - (deadline.tv_sec - timeout_start.tv_sec);
-			float deadline_time = ping->timeout - (deadline.tv_sec - timeout_start.tv_sec);
+			// remaining = tr->timeout - (deadline.tv_sec - timeout_start.tv_sec);
+			float deadline_time = tr->timeout - (deadline.tv_sec - timeout_start.tv_sec);
 			if (deadline_time < remaining)
 				remaining = deadline_time;
 		}
@@ -108,30 +108,30 @@ static void	ping_loop(t_ping *ping)
 			ts.tv_nsec = (remaining - ts.tv_sec) * 1000000000;
 			nanosleep(&ts, NULL);
 		}
-		ping->packet_sent_count++;
+		tr->packet_sent_count++;
 	}
 
 	// Linger option
-	struct timeval	linger_start = get_time();
-	if (ping->linger != -1)
-	{
-		while (
-			   !did_we_exceed_in_seconds(linger_start, ping->linger)
-			&& !did_we_timeout(timeout_start, ping)
-			&& g_is_running
-		)
-			deserialize_icmp_packet(ping, linger_start);
-	}
-	print_end_statistics(ping);
-	return;
+	// struct timeval	linger_start = get_time();
+	// if (tr->linger != -1)
+	// {
+	// 	while (
+	// 		   !did_we_exceed_in_seconds(linger_start, tr->linger)
+	// 		&& !did_we_timeout(timeout_start, ping)
+	// 		&& g_is_running
+	// 	)
+	// 		deserialize_icmp_packet(ping, linger_start);
+	// }
+	// print_end_statistics(ping);
+	// return;
 }
 
-static void	free_ping(t_ping *ping unused)
+static void	free_ping(t_tr *tr unused)
 {
 	AUTO_LOG;
 
 	// Free the addrinfo linked list
-	struct addrinfo	*addr = ping->addr_info;
+	struct addrinfo	*addr = tr->addr_info;
 	while (addr)
 	{
 		struct addrinfo	*next = addr->ai_next;
@@ -140,7 +140,7 @@ static void	free_ping(t_ping *ping unused)
 	}
 
 	// Free the echo replies linked list
-	t_replies	*echo_reply = ping->replies;
+	t_replies	*echo_reply = tr->replies;
 	while (echo_reply)
 	{
 		t_replies	*next = echo_reply->next;
@@ -149,7 +149,7 @@ static void	free_ping(t_ping *ping unused)
 	}
 
 	// Free the ip_str
-	if (ping->ip_str) free(ping->ip_str);
+	if (tr->ip_str) free(tr->ip_str);
 	return ;
 }
 
@@ -157,22 +157,22 @@ int	main(int argc, char **argv unused)
 {
 	AUTO_LOG;
 
-	t_ping	pingu;
-	t_ping	*ping = &pingu;
-	init_ping_struct(ping, argv);
+	t_tr	tracerutu;
+	t_tr	*tr = &tracerutu;
+	init_ping_struct(tr, argv);
 
 	if (argc < 2)
-		return (help(ping), EXIT_FAILURE);
+		return (help(tr), EXIT_FAILURE);
 
 	signal(SIGINT, &handle_sigint);
 	signal(SIGQUIT, &handle_sigint);
 
-	if (parse_args(argc, argv, ping) == EXIT_FAILURE) return (ping->exit_status);
-	if (create_icmp_socket(ping) == EXIT_FAILURE) return (EXIT_FAILURE);
-	if (resolve_hostname(ping) == EXIT_FAILURE) return (EXIT_FAILURE);
+	if (parse_args(argc, argv, tr) == EXIT_FAILURE) return (tr->exit_status);
+	if (create_icmp_socket(tr) == EXIT_FAILURE) return (EXIT_FAILURE);
+	if (resolve_hostname(tr) == EXIT_FAILURE) return (EXIT_FAILURE);
 
-	ping_loop(ping);
-	close(ping->sockfd);
-	free_ping(ping);
+	ping_loop(tr);
+	close(tr->sockfd);
+	free_ping(tr);
 	return (0);
 }

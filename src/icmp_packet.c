@@ -5,22 +5,22 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/01/15 15:09:13 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/03/25 17:2020:4545 by ldalmass         ###   ########.fr       */
+/*   Created: 2026/04/28 17:11:14 by ldalmass          #+#    #+#             */
+/*   Updated: 2026/04/28 17:11:15 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/ft_ping.h"
+#include "../includes/ft_traceroute.h"
 
-void	build_ping_packet(t_ping *ping)
+void	build_ping_packet(t_tr *tr)
 {
 	AUTO_LOG;
 
-	init_icmp_header(ping);
-	serialize_icmp_packet(ping);
-	if (!ping->packet) return ;
-	ping->icmp_packet.checksum = calculate_checksum((uint16_t *)ping->packet, ping->packet_len);
-	*(uint16_t *)&ping->packet[2] = ping->icmp_packet.checksum;		// this writes both the packet[2] and packet[3]
+	init_icmp_header(tr);
+	serialize_icmp_packet(tr);
+	if (!tr->packet) return ;
+	tr->icmp_packet.checksum = calculate_checksum((uint16_t *)tr->packet, tr->packet_len);
+	*(uint16_t *)&tr->packet[2] = tr->icmp_packet.checksum;		// this writes both the packet[2] and packet[3]
 	return ;
 }
 
@@ -50,17 +50,17 @@ uint16_t	calculate_checksum(void *addr, int count)
 	return ((uint16_t)(~sum));
 }
 
-void	init_icmp_header(t_ping *ping)
+void	init_icmp_header(t_tr *tr)
 {
 	AUTO_LOG;
 	
 	static	int	sequence_number = 0;
 
-	ping->icmp_packet.type = ICMP_ECHO;
-	ping->icmp_packet.code = 0;
-	ping->icmp_packet.checksum = 0;
-	ping->icmp_packet.identifier = getpid() & 0xffff;
-	ping->icmp_packet.sequence_number = sequence_number++;
+	tr->icmp_packet.type = ICMP_ECHO;
+	tr->icmp_packet.code = 0;
+	tr->icmp_packet.checksum = 0;
+	tr->icmp_packet.identifier = getpid() & 0xffff;
+	tr->icmp_packet.sequence_number = sequence_number++;
 
 	LOG(GREEN "ICMP header initialized" RESET);
 	return ;
