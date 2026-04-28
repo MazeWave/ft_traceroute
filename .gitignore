@@ -1,9 +1,10 @@
 *.o
 *.a
-ft_ping
-ft_ping_bonus
+ft_traceroute
+ft_traceroute_bonus
 .claude/
 docs/
 ping_tester/
 deps/
 .claude/
+inetutils
