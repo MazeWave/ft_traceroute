@@ -1,0 +1,162 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_traceroute.h                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/28 17:10:35 by ldalmass          #+#    #+#             */
+/*   Updated: 2026/04/28 1919:2020:3737 by ldalmass         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef FT_TRACEROUTE_H
+#define FT_TRACEROUTE_H
+
+#include <stddef.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+#include <getopt.h>
+
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <math.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/ip_icmp.h>
+#include <netinet/ip.h>
+#include <signal.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <time.h>
+
+#include <netinet/ip_icmp.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include "log.h"
+#include "colors.h"
+
+#define unused __attribute__((unused))
+
+// TO REMOVE LATER -- C LANGUAGE SERVER DOESNT SUPPORT C23
+#define true 1
+#define false 0
+#define bool int
+// END TO REMOVE LATER
+
+#define PING_DEFAULT_DATA_LEN 56
+#define NI_MAXHOST 1025
+
+extern volatile bool g_is_running;
+
+typedef struct s_icmp_header
+{
+	// struct s_echo_header	header;
+
+	// First 32 bits (8 + 8 + 16)
+	uint8_t type;
+	uint8_t code;
+	uint16_t checksum;
+
+	// Second 32 bits (16 + 16)
+	uint16_t identifier;
+	uint16_t sequence_number;
+} t_icmp_header;
+
+typedef struct s_replies
+{
+	struct s_icmp_header reply;
+	struct s_replies *next;
+
+	char reversed_dns_str[NI_MAXHOST];
+
+	unsigned int length;
+	unsigned int offset;
+	unsigned int ttl;
+
+	float elapsed_time_in_seconds;
+	float elapsed_time_in_usec;
+	float elapsed_time_in_ms;
+} t_replies;
+
+typedef struct s_tr
+{
+	struct s_icmp_header icmp_packet;
+	struct addrinfo *addr_info;
+	struct s_replies *replies;
+	struct timeval total_time_elapsed;
+
+	bool exit_status;
+	// bool		is_flooding;
+	// bool		is_verbose;
+	// bool		is_quiet;
+	bool is_bonus;
+	bool is_root;
+	char *program_name;
+	char *hostname;
+	char *ip_str;
+	char *payload_raw_string;
+	uint32_t payload_length;
+	uint32_t ip;
+	uint32_t port;
+	uint32_t ttl;
+	// uint32_t	packet_sent_count;
+	// uint32_t	packet_recieved_count;
+	int sequence;
+	int count;
+	int preload_count;
+	int timeout;
+	// int			linger;
+	int sockfd;
+	float interval;
+	uint8_t *packet;
+	size_t packet_len;
+
+} t_tr;
+
+// parser.c
+int parse_args(int argc, char **argv, t_tr *ping);
+void help(t_tr *ping);
+void init_ping_struct(t_tr *ping, char **argv);
+
+// socket.c
+int create_icmp_socket(t_tr *ping);
+int resolve_hostname(t_tr *ping);
+void find_the_ip(t_tr *ping);
+void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *ping);
+void send_packet(t_tr *ping);
+
+// icmp_packet.c
+uint16_t calculate_checksum(void *addr, int count);
+void init_icmp_header(t_tr *ping);
+void read_payload_data_in_packet(t_tr *ping);
+void build_ping_packet(t_tr *ping);
+void add_payload_to_packet(t_tr *ping);
+void serialize_icmp_packet(t_tr *ping);
+float deserialize_icmp_packet(t_tr *ping, struct timeval start);
+
+// utils.c
+struct timeval get_time();
+bool did_we_timeout(struct timeval start, t_tr *ping);
+bool did_we_exceed_in_seconds(struct timeval start, uint32_t seconds);
+void handle_sigint(int signum unused);
+// void			print_end_statistics(t_tr *ping);
+void print_echo_reply(t_tr *ping);
+void print_bits(uint32_t n);
+void print_packet_informations(t_tr *ping);
+void print_ping_struct(t_tr *ping);
+#endif
