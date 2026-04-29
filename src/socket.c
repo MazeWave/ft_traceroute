@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:10:54 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/04/29 13:17:52 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/04/29 14:16:10 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,9 +104,9 @@ void serialize_icmp_packet(t_tr *tr)
 	AUTO_LOG;
 
 	size_t i = 0;
-	size_t len = sizeof(tr->icmp_packet) + tr->payload_length;
+	// size_t len = sizeof(tr->icmp_packet) + tr->payload_length;
 	uint8_t *buf = (uint8_t *)&tr->icmp_packet;
-	uint8_t *payload_data = (uint8_t *)tr->payload_raw_string;
+	// uint8_t *payload_data = (uint8_t *)tr->payload_raw_string;
 
 	tr->packet = calloc(tr->packet_len, sizeof(uint8_t));
 	if (!tr->packet)
@@ -124,11 +124,11 @@ void serialize_icmp_packet(t_tr *tr)
 		i++;
 	}
 	// Serialize payload data
-	while (payload_data && i < len)
-	{
-		tr->packet[i] = payload_data[i - sizeof(tr->icmp_packet)];
-		i++;
-	}
+	// while (payload_data && i < len)
+	// {
+	// 	tr->packet[i] = payload_data[i - sizeof(tr->icmp_packet)];
+	// 	i++;
+	// }
 	return;
 }
 

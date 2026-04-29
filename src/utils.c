@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:10:44 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/04/29 13:18:57 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/04/29 14:26:59 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@ struct timeval get_time()
 
 bool did_we_timeout(struct timeval start, t_tr *tr)
 {
-	if (tr->timeout == -1) return (false);
+	if (tr->response_time == -1) return (false);
 	struct timeval end = get_time();
 	int elapsed_time_in_sec = end.tv_sec - start.tv_sec;
-	bool did_we_timeout = (elapsed_time_in_sec >= tr->timeout) ? true : false;
+	bool did_we_timeout = (elapsed_time_in_sec >= tr->response_time) ? true : false;
 	return (did_we_timeout);
 }
 

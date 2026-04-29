@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/04/29 13:16:47 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/04/29 16:35:56 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,11 +50,11 @@ static void ping_loop(t_tr *tr)
 
 		// Account for interval
 		float remaining = tr->interval - elapsed_time_in_seconds;
-		if (tr->timeout != -1)
+		if (tr->response_time != -1)
 		{
 			struct timeval deadline = get_time();
 			// remaining = tr->timeout - (deadline.tv_sec - timeout_start.tv_sec);
-			float deadline_time = tr->timeout - (deadline.tv_sec - timeout_start.tv_sec);
+			float deadline_time = tr->response_time - (deadline.tv_sec - timeout_start.tv_sec);
 			if (deadline_time < remaining)
 				remaining = deadline_time;
 		}

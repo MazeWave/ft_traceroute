@@ -104,28 +104,31 @@ typedef struct s_tr
 	// bool		is_flooding;
 	// bool		is_verbose;
 	// bool		is_quiet;
-	bool is_bonus;
-	bool is_root;
-	char *program_name;
-	char *hostname;
-	char *ip_str;
-	char *payload_raw_string;
-	uint32_t payload_length;
-	uint32_t ip;
-	uint32_t port;
-	uint32_t ttl;
+	// char *payload_raw_string;
 	// uint32_t	packet_sent_count;
 	// uint32_t	packet_recieved_count;
-	int sequence;
-	int count;
-	int preload_count;
-	int timeout;
 	// int			linger;
-	int sockfd;
-	float interval;
+	int sequence;
+	int preload_count;
 	uint8_t *packet;
 	size_t packet_len;
 
+	bool		is_bonus;
+	bool		is_root;
+	char		*program_name;
+	char		*hostname;
+	char		*ip_str;
+	uint32_t	payload_length;
+	uint32_t	ip;
+	uint32_t	port;
+	uint32_t	ttl;
+	int			sockfd;
+	int			count;
+	int			max_hops;
+	int			offset_hop;
+	int			probes_per_hop;
+	int 		response_time;
+	float		interval;
 } t_tr;
 
 // parser.c
