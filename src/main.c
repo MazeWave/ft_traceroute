@@ -6,15 +6,15 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/04/28 19:18:09 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/04/29 13:16:47 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/ft_traceroute.h"
 
-volatile bool	g_is_running = true;
+volatile bool g_is_running = true;
 
-static void	ping_loop(t_tr *tr)
+static void ping_loop(t_tr *tr)
 {
 	AUTO_LOG;
 
@@ -24,8 +24,8 @@ static void	ping_loop(t_tr *tr)
 	// 	tr->ip_str,
 	// 	tr->payload_length
 	// );
-	
-	struct timeval	timeout_start = get_time();
+
+	struct timeval timeout_start = get_time();
 
 	// Main ping loop
 	while (g_is_running)
@@ -39,17 +39,17 @@ static void	ping_loop(t_tr *tr)
 		build_ping_packet(tr);
 
 		// Send the ping
-		struct timeval	start = get_time();
+		struct timeval start = get_time();
 		send_packet(tr);
 
 		// Listen to the echo reply
-		float	elapsed_time_in_seconds = deserialize_icmp_packet(tr, start);
+		float elapsed_time_in_seconds = deserialize_icmp_packet(tr, start);
 
 		// Recieve the echo icmp packet and display timings
 		print_echo_reply(tr);
 
 		// Account for interval
-		float	remaining = tr->interval - elapsed_time_in_seconds;
+		float remaining = tr->interval - elapsed_time_in_seconds;
 		if (tr->timeout != -1)
 		{
 			struct timeval deadline = get_time();
@@ -61,12 +61,12 @@ static void	ping_loop(t_tr *tr)
 		if (remaining > 0)
 		{
 			LOG(DEBUG RED "remaining : %f seconds" RESET, remaining);
-			struct timespec	ts;
+			struct timespec ts;
 			ts.tv_sec = remaining;
 			ts.tv_nsec = (remaining - ts.tv_sec) * 1000000000;
 			nanosleep(&ts, NULL);
 		}
-		tr->packet_sent_count++;
+		// tr->packet_sent_count++;
 	}
 
 	// Linger option
@@ -84,39 +84,39 @@ static void	ping_loop(t_tr *tr)
 	// return;
 }
 
-static void	free_ping(t_tr *tr unused)
+static void free_ping(t_tr *tr unused)
 {
 	AUTO_LOG;
 
 	// Free the addrinfo linked list
-	struct addrinfo	*addr = tr->addr_info;
+	struct addrinfo *addr = tr->addr_info;
 	while (addr)
 	{
-		struct addrinfo	*next = addr->ai_next;
+		struct addrinfo *next = addr->ai_next;
 		free(addr);
 		addr = next;
 	}
 
 	// Free the echo replies linked list
-	t_replies	*echo_reply = tr->replies;
+	t_replies *echo_reply = tr->replies;
 	while (echo_reply)
 	{
-		t_replies	*next = echo_reply->next;
+		t_replies *next = echo_reply->next;
 		free(echo_reply);
 		echo_reply = next;
 	}
 
 	// Free the ip_str
 	if (tr->ip_str) free(tr->ip_str);
-	return ;
+	return;
 }
 
-int	main(int argc, char **argv unused)
+int main(int argc, char **argv unused)
 {
 	AUTO_LOG;
 
-	t_tr	tracerutu;
-	t_tr	*tr = &tracerutu;
+	t_tr tracerutu;
+	t_tr *tr = &tracerutu;
 	init_ping_struct(tr, argv);
 
 	if (argc < 2)

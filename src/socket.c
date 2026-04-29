@@ -6,21 +6,21 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:10:54 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/04/28 17:13:18 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/04/29 13:17:52 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/ft_traceroute.h"
 
-float	deserialize_icmp_packet(t_tr *tr, struct timeval start)
+float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 {
 	AUTO_LOG;
 
-	size_t		offset = (tr->is_root) ? 20 : 0;
-	size_t		buffer_size = tr->packet_len + offset;
-	void		*buffer = NULL;
-	t_replies	*new_reply_node = NULL;
-	t_replies	**tail = &tr->replies;
+	size_t offset = (tr->is_root) ? 20 : 0;
+	size_t buffer_size = tr->packet_len + offset;
+	void *buffer = NULL;
+	t_replies *new_reply_node = NULL;
+	t_replies **tail = &tr->replies;
 
 	// Listen for the echo reply
 	buffer = calloc(1, buffer_size);
@@ -28,10 +28,11 @@ float	deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	{
 		LOG(RED "%s: malloc: Failed to allocate memory for ICMP packet buffer.\n" RESET, tr->program_name);
 		g_is_running = false;
-		return(-1.0);
+		return (-1.0);
 	}
 	struct timeval tv;
-	tv.tv_usec = (tr->is_flooding) ? 10000 : 0;
+	// tv.tv_usec = (tr->is_flooding) ? 10000 : 0;
+	tv.tv_usec = 0;
 	tv.tv_sec = 0;
 	// if (tr->is_flooding || tr->preload_count > 0)
 	// {
@@ -54,7 +55,7 @@ float	deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	{
 		free(buffer);
 		LOG(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, tr->program_name);
-		return(-1.0);
+		return (-1.0);
 	}
 
 	// Traverse the linked list to find the last node
@@ -66,17 +67,17 @@ float	deserialize_icmp_packet(t_tr *tr, struct timeval start)
 		LOG(RED "%s: malloc: Failed to allocate memory for echo reply.\n" RESET, tr->program_name);
 		g_is_running = false;
 		free(buffer);
-		return(-1.0);
+		return (-1.0);
 	}
 	// Fill in additionnal information about the echo reply in the new node
 	new_reply_node->reply = *((t_icmp_header *)(buffer + offset));
 	new_reply_node->offset = offset;
 	new_reply_node->length = tr->packet_len;
-	
+
 	// Calculate the elapsed time in seconds
-	struct timeval	end;
+	struct timeval end;
 	gettimeofday(&end, NULL);
-	uint64_t	elapsed_usec = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
+	uint64_t elapsed_usec = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
 	new_reply_node->elapsed_time_in_usec = elapsed_usec;
 	new_reply_node->elapsed_time_in_ms = elapsed_usec / 1000.0;
 	new_reply_node->elapsed_time_in_seconds = elapsed_usec / 1000000.0;
@@ -84,54 +85,54 @@ float	deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	LOG(DEBUG "Elapsed time: %.2f s " RESET, new_reply_node->elapsed_time_in_seconds);
 	LOG(DEBUG "Elapsed time: %.2f ms" RESET, new_reply_node->elapsed_time_in_ms);
 	LOG(DEBUG "Elapsed time: %.2f us" RESET, new_reply_node->elapsed_time_in_usec);
-	
+
 	// Add the reversed DNS string to the new node if we can
 	// if (getnameinfo((struct sockaddr *)tr->addr_info->ai_addr, tr->addr_info->ai_addrlen, new_reply_node->reversed_dns_str, NI_MAXHOST, NULL, 0, NI_NAMEREQD) != 0)
 	// 	new_reply_node->reversed_dns_str[0] = '\0';
-	
+
 	// Apply the new node to the end of the linked list
 	*tail = new_reply_node;
 	free(buffer);
-	
+
 	// Increment the number of packet recieved
-	tr->packet_recieved_count++;
+	// tr->packet_recieved_count++;
 	return (new_reply_node->elapsed_time_in_seconds);
 }
 
-void	serialize_icmp_packet(t_tr *tr)
+void serialize_icmp_packet(t_tr *tr)
 {
 	AUTO_LOG;
 
-	size_t		i = 0;
-	size_t		len = sizeof(tr->icmp_packet) + tr->payload_length;
-	uint8_t		*buf = (uint8_t *)&tr->icmp_packet;
-	uint8_t		*payload_data = (uint8_t *)tr->payload_raw_string;
+	size_t i = 0;
+	size_t len = sizeof(tr->icmp_packet) + tr->payload_length;
+	uint8_t *buf = (uint8_t *)&tr->icmp_packet;
+	uint8_t *payload_data = (uint8_t *)tr->payload_raw_string;
 
 	tr->packet = calloc(tr->packet_len, sizeof(uint8_t));
 	if (!tr->packet)
 	{
 		LOG(RED "%s: malloc: Failed to allocate memory for ping packet.\n" RESET, tr->program_name);
 		g_is_running = false;
-		return ;
+		return;
 	}
 
 	// Serialize icmp header
 	while (i < sizeof(tr->icmp_packet))
 	{
-	    tr->packet[i] = *((uint8_t *)buf);
-	    buf++;
-	    i++;
+		tr->packet[i] = *((uint8_t *)buf);
+		buf++;
+		i++;
 	}
 	// Serialize payload data
 	while (payload_data && i < len)
 	{
-	    tr->packet[i] = payload_data[i - sizeof(tr->icmp_packet)];
-	    i++;
+		tr->packet[i] = payload_data[i - sizeof(tr->icmp_packet)];
+		i++;
 	}
-	return ;
+	return;
 }
 
-void	send_packet(t_tr *tr)
+void send_packet(t_tr *tr)
 {
 	AUTO_LOG;
 
@@ -143,10 +144,10 @@ void	send_packet(t_tr *tr)
 
 	free(tr->packet);
 	tr->packet = NULL;
-	return ;
+	return;
 }
 
-int	create_icmp_socket(t_tr *tr)
+int create_icmp_socket(t_tr *tr)
 {
 	AUTO_LOG;
 
@@ -163,24 +164,24 @@ int	create_icmp_socket(t_tr *tr)
 	// Check if the socket was created successfully
 	if (tr->sockfd < 0)
 		return (close(tr->sockfd),
-				printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, tr->program_name, tr->sockfd),
-				EXIT_FAILURE);
-	
+			printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, tr->program_name, tr->sockfd),
+			EXIT_FAILURE);
+
 	// Set the socket timeout for receiving packets and being non-blocking
-	struct timeval	tv;
+	struct timeval tv;
 	tv.tv_sec = tr->interval;
 	tv.tv_usec = (tr->interval - tv.tv_sec) * 1000000.0;
-	setsockopt(tr->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));				// set socket to be non-blocking
-	setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &tr->ttl, sizeof(tr->ttl));	// set the TTL
+	setsockopt(tr->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); // set socket to be non-blocking
+	setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &tr->ttl, sizeof(tr->ttl)); // set the TTL
 	return (EXIT_SUCCESS);
 }
 
-int	resolve_hostname(t_tr *tr)
+int resolve_hostname(t_tr *tr)
 {
 	AUTO_LOG;
 
-	struct addrinfo	hints;
-	struct addrinfo	*res;
+	struct addrinfo hints;
+	struct addrinfo *res;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;

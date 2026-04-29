@@ -12,12 +12,12 @@
 
 #include "../includes/log.h"
 
-static int	depth = 0;
+static int depth = 0;
 
-t_log	*log_init(const char *func_name)
+t_log *log_init(const char *func_name)
 {
-	t_log	*log;
-	size_t	len;
+	t_log *log;
+	size_t len;
 
 	if (!func_name)
 		return (NULL);
@@ -39,7 +39,7 @@ t_log	*log_init(const char *func_name)
 	return (log);
 }
 
-void	log_cleanup(t_log **log)
+void log_cleanup(t_log **log)
 {
 	if (!log || !*log)
 		return;
@@ -53,7 +53,7 @@ void	log_cleanup(t_log **log)
 	*log = NULL;
 }
 
-void	log_message(t_log *log, const char *message)
+void log_message(t_log *log, const char *message)
 {
 	if (!log || !message)
 		return;
@@ -62,10 +62,10 @@ void	log_message(t_log *log, const char *message)
 	printf("%s\n", message);
 }
 
-void	log_message_v(t_log *log, const char *format, ...)
+void log_message_v(t_log *log, const char *format, ...)
 {
-	va_list	args;
-	char	buffer[1024];
+	va_list args;
+	char buffer[1024];
 
 	if (!log || !format)
 		return;
