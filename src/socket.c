@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/ft_traceroute.h"
+#include "../includes/traceroute.h"
 
 float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 {
@@ -30,10 +30,6 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 		g_is_running = false;
 		return (-1.0);
 	}
-	struct timeval tv;
-	// tv.tv_usec = (tr->is_flooding) ? 10000 : 0;
-	tv.tv_usec = 0;
-	tv.tv_sec = 0;
 	// if (tr->is_flooding || tr->preload_count > 0)
 	// {
 	// 	fd_set	read_fds;

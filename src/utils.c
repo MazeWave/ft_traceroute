@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/ft_traceroute.h"
+#include "../includes/traceroute.h"
 
 struct timeval get_time()
 {

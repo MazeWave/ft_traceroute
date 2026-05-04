@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/ft_traceroute.h"
+#include "../includes/traceroute.h"
 
 void build_ping_packet(t_tr *tr)
 {

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/ft_traceroute.h"
+#include "../includes/traceroute.h"
 
 void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 {
@@ -176,7 +176,7 @@ int parse_args(int argc, char **argv, t_tr *tr)
 		case '?':
 			return (help(tr), tr->exit_status = false, EXIT_FAILURE);
 		default:
-			if (tr->hostname == NULL) tr->hostname = strdup(optarg);
+			if (tr->hostname == NULL) tr->hostname = optarg;
 			// else if (tr->is_verbose)
 			// 	if (!has_already_printed_error++) printf(RED "Error: Multiple hostnames provided. Only the first one will be used.\n" RESET);
 			LOG(RED "Used Hostname: %s" RESET, tr->hostname);

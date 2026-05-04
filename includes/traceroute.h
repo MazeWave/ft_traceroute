@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_TRACEROUTE_H
-#define FT_TRACEROUTE_H
+#pragma once
 
 #include <stddef.h>
 #include <string.h>
@@ -162,4 +161,3 @@ void print_echo_reply(t_tr *ping);
 void print_bits(uint32_t n);
 void print_packet_informations(t_tr *ping);
 void print_ping_struct(t_tr *ping);
-#endif

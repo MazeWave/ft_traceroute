@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/ft_traceroute.h"
+#include "../includes/traceroute.h"
 
 volatile bool g_is_running = true;
 
@@ -30,9 +30,10 @@ static void ping_loop(t_tr *tr)
 	// Main ping loop
 	while (g_is_running)
 	{
-		if (did_we_timeout(timeout_start, tr)) g_is_running = false;
-		if (tr->count == 0) break;
-		if (tr->count != -1) tr->count--;
+		// if (did_we_timeout(timeout_start, tr)) g_is_running = false;
+		if (tr->count > tr->max_hops) g_is_running = false;
+		// if (tr->count == 0) break;
+		// if (tr->count != -1) tr->count--;
 		if (!g_is_running) break;
 
 		// Build the ping packet
@@ -67,6 +68,8 @@ static void ping_loop(t_tr *tr)
 			nanosleep(&ts, NULL);
 		}
 		// tr->packet_sent_count++;
+		tr->count++;
+		LOG(DEBUG "count = %d" RESET, tr->count);
 	}
 
 	// Linger option
