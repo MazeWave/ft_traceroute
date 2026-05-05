@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <stdlib.h>
 
 float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 {
@@ -30,23 +31,7 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 		g_is_running = false;
 		return (-1.0);
 	}
-	// if (tr->is_flooding || tr->preload_count > 0)
-	// {
-	// 	fd_set	read_fds;
-	// 	FD_ZERO(&read_fds);
-	// 	FD_SET(tr->sockfd, &read_fds);
-	// 	if (select(tr->sockfd + 1, &read_fds, NULL, NULL, &tv) <= 0)
-	// 	{
-	// 		free(buffer);
-	// 		return (0.0);
-	// 	}
-	// 	if (recv(tr->sockfd, buffer, buffer_size, 0) < 0)
-	// 	{
-	// 		free(buffer);
-	// 		return (-1.0);
-	// 	}
-	// }
-	// else if (recv(tr->sockfd, buffer, buffer_size, 0) < 0)
+
 	if (recv(tr->sockfd, buffer, buffer_size, 0) < 0)
 	{
 		free(buffer);
@@ -77,22 +62,20 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	new_reply_node->elapsed_time_in_usec = elapsed_usec;
 	new_reply_node->elapsed_time_in_ms = elapsed_usec / 1000.0;
 	new_reply_node->elapsed_time_in_seconds = elapsed_usec / 1000000.0;
-	new_reply_node->ttl = (tr->is_root) ? ((struct ip *)buffer)->ip_ttl : 0;
+	new_reply_node->reversed_ttl = (tr->is_root) ? ((struct ip *)buffer)->ip_ttl : 0;
 	LOG(DEBUG "Elapsed time: %.2f s " RESET, new_reply_node->elapsed_time_in_seconds);
 	LOG(DEBUG "Elapsed time: %.2f ms" RESET, new_reply_node->elapsed_time_in_ms);
 	LOG(DEBUG "Elapsed time: %.2f us" RESET, new_reply_node->elapsed_time_in_usec);
 
 	// Add the reversed DNS string to the new node if we can
-	// if (getnameinfo((struct sockaddr *)tr->addr_info->ai_addr, tr->addr_info->ai_addrlen, new_reply_node->reversed_dns_str, NI_MAXHOST, NULL, 0, NI_NAMEREQD) != 0)
-	// 	new_reply_node->reversed_dns_str[0] = '\0';
+	if (getnameinfo((struct sockaddr *)tr->addr_info->ai_addr, tr->addr_info->ai_addrlen, new_reply_node->reversed_dns_str, NI_MAXHOST, NULL, 0, NI_NAMEREQD) != 0)
+		new_reply_node->reversed_dns_str[0] = '\0';
 
 	// Apply the new node to the end of the linked list
 	*tail = new_reply_node;
 	free(buffer);
 
-	// Increment the number of packet recieved
-	// tr->packet_recieved_count++;
-	return (new_reply_node->elapsed_time_in_seconds);
+	return (new_reply_node->elapsed_time_in_ms);
 }
 
 void serialize_icmp_packet(t_tr *tr)
@@ -150,11 +133,11 @@ int create_icmp_socket(t_tr *tr)
 	// Create the socket
 	if (tr->is_root) // If the user is root, create a raw socket
 		tr->sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-	else // If the user is not root, create a DGRAM socket
+	else // If the user is not root, refuse to continue
 	{
-		// if (tr->is_verbose) printf(RED "%s: socket: Operation not permitted. Raw sockets require root privileges.\n" RESET, tr->program_name);
-		// if (tr->is_verbose) printf(RED "%s: socket: Creating a DGRAM socket instead.\n" RESET, tr->program_name);
-		tr->sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP);
+		printf(RED "%s: socket: Operation not permitted. Raw sockets require root privileges.\n" RESET, tr->program_name);
+		printf(MAGENTA "Usage: sudo %s <hostname> [options]\n" RESET, tr->program_name);
+		return (EXIT_FAILURE);
 	}
 
 	// Check if the socket was created successfully

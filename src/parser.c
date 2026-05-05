@@ -33,8 +33,6 @@ void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 	}
 	LOG(GREEN "ip as int: %d" BLUE, tr->ip);
 	LOG(GREEN "ip as string: %s" BLUE, ip_str);
-	// if (tr->is_root && tr->is_verbose) printf(YELLOW "ai->ai_family: AF_INET,
-	// ai->ai_canonname: '%s'\n" RESET, tr->hostname);
 	return;
 }
 
@@ -47,7 +45,6 @@ void find_the_ip(t_tr *tr)
 	{
 		LOG(BLUE);
 		LOG("--------------------------------");
-		LOG("ai_canonname: %s", temp->ai_canonname);
 		LOG("ai_family: %d", temp->ai_family);
 		LOG("ai_socktype: %d", temp->ai_socktype);
 		LOG("ai_protocol: %d", temp->ai_protocol);
@@ -95,7 +92,7 @@ void version(void)
 	LOG(GREEN "ft_ping -- ldalmass -- version: 7.7.7" RESET);
 }
 
-void init_ping_struct(t_tr *tr, char **argv)
+void init_traceroute_struct(t_tr *tr, char **argv)
 {
 	AUTO_LOG;
 
@@ -159,11 +156,11 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			tr->response_time = atoi(optarg);
 			LOG(BLUE "response_time: %d" RESET, tr->response_time);
 			break;
-		case 'f':
+		case 'p':
 			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0 || atoi(optarg) > 64) return (printf(RED "Error: The hop offset must be between 0 and 64\n" RESET), help(tr), tr->exit_status = true);
-			tr->offset_hop = atoi(optarg);
-			LOG(BLUE "offset_hop: %d" RESET, tr->ttl);
+			if (atoi(optarg) <= 0 || atoi(optarg) > 65535) return (printf(RED "Error: The port  must be between 0 and 65535\n" RESET), help(tr), tr->exit_status = true);
+			tr->port = atoi(optarg);
+			LOG(BLUE "port: %d" RESET, tr->port);
 			break;
 		case 'l':
 			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);

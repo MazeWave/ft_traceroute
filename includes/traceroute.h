@@ -85,7 +85,8 @@ typedef struct s_replies
 
 	unsigned int length;
 	unsigned int offset;
-	unsigned int ttl;
+	unsigned int reversed_ttl;
+	unsigned int reversed_ip;
 
 	float elapsed_time_in_seconds;
 	float elapsed_time_in_usec;
@@ -131,33 +132,33 @@ typedef struct s_tr
 } t_tr;
 
 // parser.c
-int parse_args(int argc, char **argv, t_tr *ping);
-void help(t_tr *ping);
-void init_ping_struct(t_tr *ping, char **argv);
+int parse_args(int argc, char **argv, t_tr *tr);
+void help(t_tr *tr);
+void init_traceroute_struct(t_tr *tr, char **argv);
 
 // socket.c
-int create_icmp_socket(t_tr *ping);
-int resolve_hostname(t_tr *ping);
-void find_the_ip(t_tr *ping);
-void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *ping);
-void send_packet(t_tr *ping);
+int create_icmp_socket(t_tr *tr);
+int resolve_hostname(t_tr *tr);
+void find_the_ip(t_tr *tr);
+void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr);
+void send_packet(t_tr *tr);
 
 // icmp_packet.c
 uint16_t calculate_checksum(void *addr, int count);
-void init_icmp_header(t_tr *ping);
-void read_payload_data_in_packet(t_tr *ping);
-void build_ping_packet(t_tr *ping);
-void add_payload_to_packet(t_tr *ping);
-void serialize_icmp_packet(t_tr *ping);
-float deserialize_icmp_packet(t_tr *ping, struct timeval start);
+void init_icmp_header(t_tr *tr);
+void read_payload_data_in_packet(t_tr *tr);
+void build_ping_packet(t_tr *tr);
+void add_payload_to_packet(t_tr *tr);
+void serialize_icmp_packet(t_tr *tr);
+float deserialize_icmp_packet(t_tr *tr, struct timeval start);
 
 // utils.c
 struct timeval get_time();
-bool did_we_timeout(struct timeval start, t_tr *ping);
+bool did_we_timeout(struct timeval start, t_tr *tr);
 bool did_we_exceed_in_seconds(struct timeval start, uint32_t seconds);
 void handle_sigint(int signum unused);
-// void			print_end_statistics(t_tr *ping);
-void print_echo_reply(t_tr *ping);
+// void print_end_statistics(t_tr *tr);
+void print_echo_reply(t_tr *tr);
 void print_bits(uint32_t n);
-void print_packet_informations(t_tr *ping);
-void print_ping_struct(t_tr *ping);
+void print_packet_informations(t_tr *tr);
+void print_ping_struct(t_tr *tr);

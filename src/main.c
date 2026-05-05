@@ -11,8 +11,72 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <stdint.h>
+#include <unistd.h>
 
 volatile bool g_is_running = true;
+
+static void print_hop_count_formatted(uint8_t n)
+{
+	if (n < 10) printf("  %d   ", n);
+	else printf(" %d   ", n);
+	return ;
+}
+
+static void did_we_traceroute_to_target(t_tr *tr)
+{
+	AUTO_LOG;
+	t_replies *temp = tr->replies;
+
+	if (!temp)
+		return ;
+	// Get last response node
+	while(temp->next) temp = temp->next;
+	LOG(DEBUG MAGENTA "target string = %s" RESET, tr->hostname);
+	LOG(DEBUG MAGENTA "reversed dn string = %s" RESET, temp->reversed_dns_str);
+	// if (tr->ip, temp->) g_is_running = false;
+	if (strstr(tr->hostname, temp->reversed_dns_str) != NULL) g_is_running = false;
+	return ;
+}
+
+static void traceroute_loop(t_tr *tr unused)
+{
+	AUTO_LOG;
+
+	LOG(MAGENTA "TTL = %d" RESET, tr->ttl);
+	LOG(MAGENTA "TTL + offset (%d) = %d" RESET, tr->offset_hop, tr->ttl + tr->offset_hop);
+	LOG(MAGENTA "max hops = %d" RESET, tr->max_hops);
+	LOG(MAGENTA "probes_per_hop = %d" RESET, tr->probes_per_hop);
+	LOG(MAGENTA "offset_hop = %d" RESET, tr->offset_hop);
+	LOG(MAGENTA "response_time = %d" RESET, tr->response_time);
+	LOG(MAGENTA "port = %d" RESET, tr->port);
+
+	printf(GREEN "traceroute to %s (%s), %d hops max\n" RESET, tr->hostname, tr->ip_str, tr->max_hops);
+	uint8_t	hop_count = 0;
+	while (g_is_running)
+	{
+		did_we_traceroute_to_target(tr);
+		print_hop_count_formatted(hop_count);
+		uint8_t	probe_count = 0;
+		while (g_is_running && probe_count < tr->probes_per_hop)
+		{
+			probe_count++;
+			did_we_traceroute_to_target(tr);
+			build_ping_packet(tr);
+			send_packet(tr);
+			struct timeval start = get_time();
+			float time_taken = deserialize_icmp_packet(tr, start);
+			if (time_taken == -1.0)
+			{
+				sleep(tr->response_time);
+				printf("*  ");
+			}
+			else printf("%f", time_taken);
+			if (probe_count < tr->probes_per_hop) printf("\n");
+		}
+	}
+	return ;
+}
 
 static void ping_loop(t_tr *tr)
 {
@@ -84,10 +148,10 @@ static void ping_loop(t_tr *tr)
 	// 		deserialize_icmp_packet(ping, linger_start);
 	// }
 	// print_end_statistics(ping);
-	// return;
+	return;
 }
 
-static void free_ping(t_tr *tr unused)
+static void free_traceroute(t_tr *tr unused)
 {
 	AUTO_LOG;
 
@@ -120,10 +184,9 @@ int main(int argc, char **argv unused)
 
 	t_tr tracerutu;
 	t_tr *tr = &tracerutu;
-	init_ping_struct(tr, argv);
+	init_traceroute_struct(tr, argv);
 
-	if (argc < 2)
-		return (help(tr), EXIT_FAILURE);
+	if (argc < 2) return (help(tr), EXIT_FAILURE);
 
 	signal(SIGINT, &handle_sigint);
 	signal(SIGQUIT, &handle_sigint);
@@ -132,8 +195,9 @@ int main(int argc, char **argv unused)
 	if (create_icmp_socket(tr) == EXIT_FAILURE) return (EXIT_FAILURE);
 	if (resolve_hostname(tr) == EXIT_FAILURE) return (EXIT_FAILURE);
 
-	ping_loop(tr);
+	traceroute_loop(tr);
+	if (0) ping_loop(tr);
 	close(tr->sockfd);
-	free_ping(tr);
+	free_traceroute(tr);
 	return (0);
 }

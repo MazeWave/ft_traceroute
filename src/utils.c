@@ -114,7 +114,7 @@ void print_echo_reply(t_tr *tr)
 		reply->length,
 		tr->ip_str,
 		reply->reply.sequence_number,
-		reply->ttl,
+		reply->reversed_ttl,
 		reply->elapsed_time_in_ms);
 
 	return;
