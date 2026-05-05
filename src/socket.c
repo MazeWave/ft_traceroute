@@ -11,7 +11,10 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <netinet/in.h>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 {
@@ -32,7 +35,10 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 		return (-1.0);
 	}
 
-	if (recv(tr->sockfd, buffer, buffer_size, 0) < 0)
+	struct sockaddr	src;
+	socklen_t		src_len = sizeof(src);
+	// if (recv(tr->sockfd, buffer, buffer_size, 0) < 0)
+	if (recvfrom(tr->sockfd, buffer, buffer_size, 0, &src, &src_len)) < 0)
 	{
 		free(buffer);
 		LOG(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, tr->program_name);

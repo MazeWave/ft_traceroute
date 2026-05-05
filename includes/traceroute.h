@@ -110,7 +110,7 @@ typedef struct s_tr
 	// int			linger;
 	// int			count;
 	int sequence;
-	int preload_count;
+	// int preload_count;
 	uint8_t *packet;
 	size_t packet_len;
 
@@ -127,7 +127,7 @@ typedef struct s_tr
 	uint32_t	max_hops;
 	uint32_t	offset_hop;
 	uint32_t	probes_per_hop;
-	uint32_t 	response_timeout_for_each_probe;
+	int			response_timeout_for_each_probe;
 	float		interval;
 } t_tr;
 
