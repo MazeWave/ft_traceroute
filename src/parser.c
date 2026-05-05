@@ -12,26 +12,28 @@
 
 #include "../includes/traceroute.h"
 
-void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr) {
-  AUTO_LOG;
-
-  char ip_str[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
-
-  // set the ip
-  tr->ip = ai_addr->sin_addr.s_addr;
-  if (tr->ip_str)
-    free(tr->ip_str);
-  tr->ip_str = strndup(ip_str, INET_ADDRSTRLEN);
-  if (!tr->ip_str) {
-    LOG(RED "%s: malloc: Failed to allocate memory for ip string.\n" RESET,
-        tr->program_name);
-    tr->ip_str = NULL;
-    return;
-  }
-  LOG(GREEN "ip as int: %d" BLUE, tr->ip);
-  LOG(GREEN "ip as string: %s" BLUE, ip_str);
-  return;
+void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
+{
+	AUTO_LOG;
+	
+	char ip_str[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
+	
+	// set the ip
+	tr->ip = ai_addr->sin_addr.s_addr;
+	if (tr->ip_str)
+	free(tr->ip_str);
+	tr->ip_str = strndup(ip_str, INET_ADDRSTRLEN);
+	if (!tr->ip_str)
+	{
+		LOG(RED "%s: malloc: Failed to allocate memory for ip string.\n" RESET,
+		tr->program_name);
+		tr->ip_str = NULL;
+		return;
+	}
+	LOG(GREEN "ip as int: %d" BLUE, tr->ip);
+	LOG(GREEN "ip as string: %s" BLUE, ip_str);
+	return;
 }
 
 void find_the_ip(t_tr *tr) {

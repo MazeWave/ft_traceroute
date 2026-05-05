@@ -44,8 +44,13 @@ static void did_we_traceroute_to_target(t_tr *tr)
 	while(temp->next) temp = temp->next;
 	LOG(DEBUG MAGENTA "target string = %s" RESET, tr->hostname);
 	LOG(DEBUG MAGENTA "reversed dn string = %s" RESET, temp->reversed_dns_str);
-	// if (tr->ip, temp->) g_is_running = false;
-	if (strstr(tr->hostname, temp->reversed_dns_str) != NULL) g_is_running = false;
+	LOG(RED "HERE"RESET);
+	LOG(DEBUG MAGENTA "target IP = %u" RESET, tr->ip);
+	LOG(RED "HERE"RESET);
+	LOG(DEBUG MAGENTA "reversed IP = %u" RESET, temp->reversed_ip);
+	
+	// if (strstr(tr->hostname, temp->reversed_dns_str) != NULL) g_is_running = false;
+	if (tr->ip == temp->reversed_ip) g_is_running = false;
 	return ;
 }
 
@@ -73,21 +78,27 @@ static void traceroute_loop(t_tr *tr)
 		{
 			// Increment the probe count (default 3 probes per hops)
 			probe_count++;
-			did_we_traceroute_to_target(tr);
+			did_we_traceroute_to_target(tr); // Sets g_is_running to false if we are at the target
+
+			// Build the probe
 			build_traceroute_packet(tr);
+
+			// Send the proble
 			send_packet(tr);
+
+			// Listen for the reply
 			struct timeval start = get_time();
 			float time_taken = deserialize_icmp_packet(tr, start);
 
 			// Print informations
-			// if (probe_count == 1) printf("%s  ", get_reversed_ip_as_string(tr));
+			if (probe_count == 1) printf("%s  ", "TODO: replace with real ip 192.168.1.0");
 			if (time_taken == -1.0)
 			{
 				sleep(tr->response_timeout_for_each_probe);
 				printf("*  ");
 			}
-			else printf("%.3fms  ", time_taken);
-			if (probe_count == tr->probes_per_hop - 1) printf("\n");
+			else printf("%.3""fms  ", time_taken);
+			if (probe_count == tr->probes_per_hop - 1) printf("\n"); // New line after the last probe result
 		}
 
 		// Increment the ttl
