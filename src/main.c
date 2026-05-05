@@ -33,25 +33,24 @@ static void print_hop_count_formatted(uint8_t n)
 	return ;
 }
 
-static void did_we_traceroute_to_target(t_tr *tr)
+static bool did_we_traceroute_to_target(t_tr *tr)
 {
 	AUTO_LOG;
 	t_replies *temp = tr->replies;
 
-	if (!temp)
-		return ;
 	// Get last response node
+	if (!temp)
+		return false;
 	while(temp->next) temp = temp->next;
+
 	LOG(DEBUG MAGENTA "target string = %s" RESET, tr->hostname);
 	LOG(DEBUG MAGENTA "reversed dn string = %s" RESET, temp->reversed_dns_str);
-	LOG(RED "HERE"RESET);
 	LOG(DEBUG MAGENTA "target IP = %u" RESET, tr->ip);
-	LOG(RED "HERE"RESET);
 	LOG(DEBUG MAGENTA "reversed IP = %u" RESET, temp->reversed_ip);
 	
-	// if (strstr(tr->hostname, temp->reversed_dns_str) != NULL) g_is_running = false;
+	// Actual check
 	if (tr->ip == temp->reversed_ip) g_is_running = false;
-	return ;
+	return (tr->ip == temp->reversed_ip);
 }
 
 static void traceroute_loop(t_tr *tr)
