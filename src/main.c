@@ -17,14 +17,14 @@
 
 volatile bool g_is_running = true;
 
-static char *get_reversed_ip_as_string(t_tr *tr)
-{
-	t_replies	*temp = tr->replies;
+// static char *get_reversed_ip_as_string(t_tr *tr)
+// {
+// 	t_replies	*temp = tr->replies;
 
-	if (!temp) return NULL;
-	while (temp->next) temp = temp->next;
-	// temp->reversed_ip = (struct sockaddr_in *)temp->reply
-}
+// 	if (!temp) return NULL;
+// 	while (temp->next) temp = temp->next;
+// 	// temp->reversed_ip = (struct sockaddr_in *)temp->reply
+// }
 
 static void print_hop_count_formatted(uint8_t n)
 {
@@ -80,13 +80,13 @@ static void traceroute_loop(t_tr *tr)
 			float time_taken = deserialize_icmp_packet(tr, start);
 
 			// Print informations
-			if (probe_count == 1) printf("%s  ", get_reversed_ip_as_string(tr));
+			// if (probe_count == 1) printf("%s  ", get_reversed_ip_as_string(tr));
 			if (time_taken == -1.0)
 			{
 				sleep(tr->response_timeout_for_each_probe);
 				printf("*  ");
 			}
-			else printf("%f.3ms  ", time_taken);
+			else printf("%.3fms  ", time_taken);
 			if (probe_count == tr->probes_per_hop - 1) printf("\n");
 		}
 
@@ -155,7 +155,7 @@ static void ping_loop(t_tr *tr)
 		}
 		// tr->packet_sent_count++;
 		// tr->count++;
-		LOG(DEBUG "count = %d" RESET, tr->count);
+		// LOG(DEBUG "count = %d" RESET, tr->count);
 	}
 
 	// Linger option

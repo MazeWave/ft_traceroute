@@ -151,7 +151,7 @@ void print_ping_struct(t_tr *tr unused)
 	LOG(BLUE);
 	LOG("is_bonus: %d", tr->is_bonus);
 	LOG("is_root: %d", tr->is_root);
-	LOG("count: %d", tr->count);
+	// LOG("count: %d", tr->count);
 	LOG("hostname: %s", tr->hostname);
 	LOG("sockfd: %d", tr->sockfd);
 	LOG(RESET);

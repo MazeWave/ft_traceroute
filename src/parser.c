@@ -134,7 +134,7 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			if (!tr->is_bonus)
 			return (help(tr), tr->exit_status = true);
 			tr->max_hops = atoi(optarg);
-			LOG(BLUE "max_hops: %d" RESET, tr->count);
+			LOG(BLUE "max_hops: %d" RESET, tr->max_hops);
 			if (tr->max_hops <= 0)
 			return (printf(RED "Error: Max hop must be greater than 0\n" RESET),
 			help(tr), tr->exit_status = true);
