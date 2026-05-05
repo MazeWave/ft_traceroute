@@ -12,7 +12,7 @@
 
 #include "../includes/traceroute.h"
 
-void build_ping_packet(t_tr *tr)
+void build_traceroute_packet(t_tr *tr)
 {
 	AUTO_LOG;
 

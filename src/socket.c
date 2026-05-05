@@ -148,8 +148,8 @@ int create_icmp_socket(t_tr *tr)
 
 	// Set the socket timeout for receiving packets and being non-blocking
 	struct timeval tv;
-	tv.tv_sec = tr->interval;
-	tv.tv_usec = (tr->interval - tv.tv_sec) * 1000000.0;
+	tv.tv_sec = tr->response_timeout_for_each_probe;
+	tv.tv_usec = (tr->response_timeout_for_each_probe - tv.tv_sec) * 1000000.0;
 	setsockopt(tr->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); // set socket to be non-blocking
 	setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &tr->ttl, sizeof(tr->ttl)); // set the TTL
 	return (EXIT_SUCCESS);

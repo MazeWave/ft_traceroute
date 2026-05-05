@@ -39,7 +39,7 @@ static void did_we_traceroute_to_target(t_tr *tr)
 	return ;
 }
 
-static void traceroute_loop(t_tr *tr unused)
+static void traceroute_loop(t_tr *tr)
 {
 	AUTO_LOG;
 
@@ -48,32 +48,41 @@ static void traceroute_loop(t_tr *tr unused)
 	LOG(MAGENTA "max hops = %d" RESET, tr->max_hops);
 	LOG(MAGENTA "probes_per_hop = %d" RESET, tr->probes_per_hop);
 	LOG(MAGENTA "offset_hop = %d" RESET, tr->offset_hop);
-	LOG(MAGENTA "response_time = %d" RESET, tr->response_time);
+	LOG(MAGENTA "response_time = %d" RESET, tr->response_timeout_for_each_probe);
 	LOG(MAGENTA "port = %d" RESET, tr->port);
 
 	printf(GREEN "traceroute to %s (%s), %d hops max\n" RESET, tr->hostname, tr->ip_str, tr->max_hops);
-	uint8_t	hop_count = 0;
+	uint8_t	hop_count = 1;
 	while (g_is_running)
 	{
 		did_we_traceroute_to_target(tr);
 		print_hop_count_formatted(hop_count);
+
 		uint8_t	probe_count = 0;
 		while (g_is_running && probe_count < tr->probes_per_hop)
 		{
+			// Increment the probe count (default 3 probes per hops)
 			probe_count++;
 			did_we_traceroute_to_target(tr);
-			build_ping_packet(tr);
+			build_traceroute_packet(tr);
 			send_packet(tr);
 			struct timeval start = get_time();
 			float time_taken = deserialize_icmp_packet(tr, start);
 			if (time_taken == -1.0)
 			{
-				sleep(tr->response_time);
+				sleep(tr->response_timeout_for_each_probe);
 				printf("*  ");
 			}
 			else printf("%f", time_taken);
-			if (probe_count < tr->probes_per_hop) printf("\n");
+			if (probe_count == tr->probes_per_hop - 1) printf("\n");
 		}
+
+		// Increment the ttl
+		tr->ttl++;
+		setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &tr->ttl, sizeof(tr->ttl));
+		if (tr->ttl >= tr->max_hops) g_is_running = false;
+		// Increment the hop count
+		hop_count++;
 	}
 	return ;
 }
@@ -95,13 +104,13 @@ static void ping_loop(t_tr *tr)
 	while (g_is_running)
 	{
 		// if (did_we_timeout(timeout_start, tr)) g_is_running = false;
-		if (tr->count > tr->max_hops) g_is_running = false;
+		// if (tr->count > tr->max_hops) g_is_running = false;
 		// if (tr->count == 0) break;
 		// if (tr->count != -1) tr->count--;
 		if (!g_is_running) break;
 
 		// Build the ping packet
-		build_ping_packet(tr);
+		build_traceroute_packet(tr);
 
 		// Send the ping
 		struct timeval start = get_time();
@@ -115,11 +124,11 @@ static void ping_loop(t_tr *tr)
 
 		// Account for interval
 		float remaining = tr->interval - elapsed_time_in_seconds;
-		if (tr->response_time != -1)
+		if (tr->response_timeout_for_each_probe != -1)
 		{
 			struct timeval deadline = get_time();
 			// remaining = tr->timeout - (deadline.tv_sec - timeout_start.tv_sec);
-			float deadline_time = tr->response_time - (deadline.tv_sec - timeout_start.tv_sec);
+			float deadline_time = tr->response_timeout_for_each_probe - (deadline.tv_sec - timeout_start.tv_sec);
 			if (deadline_time < remaining)
 				remaining = deadline_time;
 		}
@@ -132,7 +141,7 @@ static void ping_loop(t_tr *tr)
 			nanosleep(&ts, NULL);
 		}
 		// tr->packet_sent_count++;
-		tr->count++;
+		// tr->count++;
 		LOG(DEBUG "count = %d" RESET, tr->count);
 	}
 

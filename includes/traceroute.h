@@ -83,10 +83,10 @@ typedef struct s_replies
 
 	char reversed_dns_str[NI_MAXHOST];
 
-	unsigned int length;
-	unsigned int offset;
-	unsigned int reversed_ttl;
-	unsigned int reversed_ip;
+	uint32_t	length;
+	uint32_t	offset;
+	uint32_t	reversed_ttl;
+	uint32_t	reversed_ip;
 
 	float elapsed_time_in_seconds;
 	float elapsed_time_in_usec;
@@ -108,11 +108,13 @@ typedef struct s_tr
 	// uint32_t	packet_sent_count;
 	// uint32_t	packet_recieved_count;
 	// int			linger;
+	// int			count;
 	int sequence;
 	int preload_count;
 	uint8_t *packet;
 	size_t packet_len;
 
+	int			sockfd;
 	bool		is_bonus;
 	bool		is_root;
 	char		*program_name;
@@ -122,12 +124,10 @@ typedef struct s_tr
 	uint32_t	ip;
 	uint32_t	port;
 	uint32_t	ttl;
-	int			sockfd;
-	int			count;
-	int			max_hops;
-	int			offset_hop;
-	int			probes_per_hop;
-	int 		response_time;
+	uint32_t	max_hops;
+	uint32_t	offset_hop;
+	uint32_t	probes_per_hop;
+	uint32_t 	response_timeout_for_each_probe;
 	float		interval;
 } t_tr;
 
@@ -147,7 +147,7 @@ void send_packet(t_tr *tr);
 uint16_t calculate_checksum(void *addr, int count);
 void init_icmp_header(t_tr *tr);
 void read_payload_data_in_packet(t_tr *tr);
-void build_ping_packet(t_tr *tr);
+void build_traceroute_packet(t_tr *tr);
 void add_payload_to_packet(t_tr *tr);
 void serialize_icmp_packet(t_tr *tr);
 float deserialize_icmp_packet(t_tr *tr, struct timeval start);

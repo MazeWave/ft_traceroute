@@ -114,13 +114,13 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 	tr->addr_info = NULL;
 	tr->replies = NULL;
 	tr->interval = 3;
-	tr->response_time = 3;
+	tr->response_timeout_for_each_probe = 3;
 	tr->ttl = 1;
 	tr->max_hops = 64;
 	tr->offset_hop = 0;
 	tr->port = 33434;
 	tr->ip = 0;
-	tr->count = -1;
+	// tr->count = -1;
 	tr->packet = NULL;
 	tr->packet_len = sizeof(t_icmp_header) + PING_DEFAULT_DATA_LEN;
 	tr->probes_per_hop = 3;
@@ -153,7 +153,7 @@ int parse_args(int argc, char **argv, t_tr *tr)
 		case 'w':
 			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
 			if (atoi(optarg) <= 0) return (printf(RED "Error: Response time must be at 1 least seconds\n" RESET), help(tr), tr->exit_status = true);
-			tr->response_time = atoi(optarg);
+			tr->response_timeout_for_each_probe = atoi(optarg);
 			LOG(BLUE "response_time: %d" RESET, tr->response_time);
 			break;
 		case 'p':

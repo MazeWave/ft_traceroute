@@ -21,10 +21,10 @@ struct timeval get_time()
 
 bool did_we_timeout(struct timeval start, t_tr *tr)
 {
-	if (tr->response_time == -1) return (false);
+	if (tr->response_timeout_for_each_probe == -1) return (false);
 	struct timeval end = get_time();
 	int elapsed_time_in_sec = end.tv_sec - start.tv_sec;
-	bool did_we_timeout = (elapsed_time_in_sec >= tr->response_time) ? true : false;
+	bool did_we_timeout = (elapsed_time_in_sec >= tr->response_timeout_for_each_probe) ? true : false;
 	return (did_we_timeout);
 }
 
