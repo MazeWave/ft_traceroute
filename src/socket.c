@@ -11,10 +11,17 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <unistd.h>
+
+char *transform_raw_ip_to_string_ip(const void *restrict ip)
+{
+	AUTO_LOG;
+
+	char str[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, ip, str, INET_ADDRSTRLEN);
+
+	LOG(DEBUG YELLOW "%s" RESET, str);
+	return (strdup(str));
+}
 
 float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 {
@@ -60,6 +67,8 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	new_reply_node->reply = *((t_icmp_header *)(buffer + offset));
 	new_reply_node->offset = offset;
 	new_reply_node->length = tr->packet_len;
+	new_reply_node->reversed_ip = src.sin_addr.s_addr;
+	new_reply_node->reversed_ip_str = transform_raw_ip_to_string_ip(src.sin_addr.s_addr);
 
 	// Calculate the elapsed time in seconds
 	struct timeval end;

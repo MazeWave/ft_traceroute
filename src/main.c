@@ -11,20 +11,10 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <netinet/in.h>
-#include <stdint.h>
-#include <unistd.h>
 
 volatile bool g_is_running = true;
 
-// static char *get_reversed_ip_as_string(t_tr *tr)
-// {
-// 	t_replies	*temp = tr->replies;
 
-// 	if (!temp) return NULL;
-// 	while (temp->next) temp = temp->next;
-// 	// temp->reversed_ip = (struct sockaddr_in *)temp->reply
-// }
 
 static void print_hop_count_formatted(uint8_t n)
 {
@@ -52,6 +42,8 @@ static bool did_we_traceroute_to_target(t_tr *tr)
 	if (tr->ip == temp->reversed_ip) g_is_running = false;
 	return (tr->ip == temp->reversed_ip);
 }
+
+// static char *
 
 static void traceroute_loop(t_tr *tr)
 {
@@ -90,7 +82,7 @@ static void traceroute_loop(t_tr *tr)
 			float time_taken = deserialize_icmp_packet(tr, start);
 
 			// Print informations
-			if (probe_count == 1) printf("%s  ", "TODO: replace with real ip 192.168.1.0");
+			if (probe_count == 1) printf("%s  ", htonl(tr->replies->reversed_ip));
 			if (time_taken == -1.0)
 			{
 				sleep(tr->response_timeout_for_each_probe);

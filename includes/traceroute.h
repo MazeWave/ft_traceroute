@@ -87,6 +87,7 @@ typedef struct s_replies
 	uint32_t	offset;
 	uint32_t	reversed_ttl;
 	uint32_t	reversed_ip;
+	char		*reversed_ip_str;
 
 	float elapsed_time_in_seconds;
 	float elapsed_time_in_usec;
@@ -142,6 +143,7 @@ int resolve_hostname(t_tr *tr);
 void find_the_ip(t_tr *tr);
 void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr);
 void send_packet(t_tr *tr);
+char *transform_raw_ip_to_string_ip(const void *restrict ip);
 
 // icmp_packet.c
 uint16_t calculate_checksum(void *addr, int count);
