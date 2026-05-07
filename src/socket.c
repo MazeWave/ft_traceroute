@@ -12,12 +12,12 @@
 
 #include "../includes/traceroute.h"
 
-char *transform_raw_ip_to_string_ip(const void *restrict ip)
+char *transform_raw_ip_to_string_ip(const unsigned int ip)
 {
 	AUTO_LOG;
 
 	char str[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, ip, str, INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, &ip, str, INET_ADDRSTRLEN);
 
 	LOG(DEBUG YELLOW "%s" RESET, str);
 	return (strdup(str));
@@ -27,11 +27,10 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 {
 	AUTO_LOG;
 
-	size_t offset = (tr->is_root) ? 20 : 0;
-	size_t buffer_size = tr->packet_len + offset;
-	void *buffer = NULL;
-	t_replies *new_reply_node = NULL;
-	t_replies **tail = &tr->replies;
+	void		*buffer = NULL;
+	size_t		buffer_size = tr->packet_len;
+	t_replies	*new_reply_node = NULL;
+	t_replies	**tail = &tr->replies;
 
 	// Listen for the echo reply
 	buffer = calloc(1, buffer_size);
@@ -53,8 +52,7 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	}
 
 	// Traverse the linked list to find the last node
-	while (*tail)
-		tail = &(*tail)->next;
+	while (*tail) tail = &(*tail)->next;
 	new_reply_node = calloc(1, sizeof(t_replies));
 	if (!new_reply_node)
 	{

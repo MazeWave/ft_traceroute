@@ -43,7 +43,14 @@ static bool did_we_traceroute_to_target(t_tr *tr)
 	return (tr->ip == temp->reversed_ip);
 }
 
-// static char *
+static char *get_last_ip_str_returned(t_tr *tr)
+{
+	t_replies	*temp = tr->replies;
+
+	if (!temp) return (NULL);
+	while (temp->next) temp = temp->next;
+	return (temp->reversed_ip_str);
+}
 
 static void traceroute_loop(t_tr *tr)
 {
@@ -82,7 +89,7 @@ static void traceroute_loop(t_tr *tr)
 			float time_taken = deserialize_icmp_packet(tr, start);
 
 			// Print informations
-			if (probe_count == 1) printf("%s  ", htonl(tr->replies->reversed_ip));
+			if (probe_count == 1) printf("%s  ", get_last_ip_str_returned(tr));
 			if (time_taken == -1.0)
 			{
 				sleep(tr->response_timeout_for_each_probe);

@@ -17,10 +17,10 @@
 void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 {
 	AUTO_LOG;
-	
+
 	char ip_str[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
-	
+
 	// set the ip
 	tr->ip = ai_addr->sin_addr.s_addr;
 	if (tr->ip_str)
@@ -41,7 +41,7 @@ void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 void find_the_ip(t_tr *tr)
 {
 	AUTO_LOG;
-	
+
 	struct addrinfo *temp = tr->addr_info;
 	while (temp)
 	{
@@ -63,12 +63,12 @@ void find_the_ip(t_tr *tr)
 void help(t_tr *tr)
 {
 	AUTO_LOG;
-	
+
 	switch (tr->is_bonus)
 	{
 	case true:
 		printf(GREEN "Usage: %s <hostname> [options]\n" RESET, tr->program_name);
-		
+
 		printf("Options:\n");
 		printf("  -m            : Set maximal hop count (default: 64)\n");
 		printf("  -q            : Send NUM probe packets per hop (default: 3)\n");
@@ -79,12 +79,12 @@ void help(t_tr *tr)
 		return;
 	case false:
 		printf(GREEN "Usage: %s <hostname> [options]\n" RESET, tr->program_name);
-		
+
 		printf("Options:\n");
 		printf("  -h -?         : Print the help\n");
 		return;
 	}
-	
+
 	return;
 }
 
@@ -98,7 +98,7 @@ void version(void)
 void init_traceroute_struct(t_tr *tr, char **argv)
 {
 	AUTO_LOG;
-	
+
 	// tr->is_quiet = false;
 	// tr->is_flooding = false;
 	// tr->payload_raw_string = NULL;
