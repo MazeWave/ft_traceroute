@@ -95,7 +95,7 @@ static void traceroute_loop(t_tr *tr)
 			LOG(DEBUG CYAN "is condition true : %d" RESET, (get_time().tv_sec - start.tv_sec) > tr->response_timeout_for_each_probe);
 			while (
 				   g_is_running
-				&& (get_time().tv_sec - start.tv_sec) > tr->response_timeout_for_each_probe
+				&& (get_time().tv_sec - start.tv_sec) < tr->response_timeout_for_each_probe
 				&& (time_taken == -1.0)
 			)
 			{
@@ -109,13 +109,6 @@ static void traceroute_loop(t_tr *tr)
 			if (probe_count == 1 && last_reversed_ip_str) printf("%s  ", last_reversed_ip_str);
 			if (last_reversed_ip_str) free(last_reversed_ip_str);
 			if (time_taken == -1.0) printf("*  ");
-			// if (time_taken == -1.0)
-			// {
-			// 	LOG(DEBUG RED "SLEEPING..." RESET);
-			// 	sleep(tr->response_timeout_for_each_probe);
-			// 	LOG(DEBUG RED "...RESUMED" RESET);
-			// 	printf("*  ");
-			// }
 			else printf("%.3""fms  ", time_taken);
 			fflush(stdout);
 			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
