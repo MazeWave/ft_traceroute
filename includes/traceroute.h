@@ -84,7 +84,7 @@ typedef struct s_replies
 	char reversed_dns_str[NI_MAXHOST];
 
 	uint32_t	length;
-	uint32_t	offset;
+	// uint32_t	offset;
 	uint32_t	reversed_ttl;
 	uint32_t	reversed_ip;
 	char		*reversed_ip_str;

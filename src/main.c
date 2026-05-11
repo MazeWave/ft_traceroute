@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <netinet/ip_icmp.h>
 
 volatile bool g_is_running = true;
 
@@ -18,8 +19,8 @@ volatile bool g_is_running = true;
 
 static void print_hop_count_formatted(uint8_t n)
 {
-	if (n < 10) printf("  %d   ", n);
-	else printf(" %d   ", n);
+	if (n < 10) printf(CYAN"  %d   "RESET, n);
+	else printf(CYAN" %d   "RESET, n);
 	return ;
 }
 
@@ -29,17 +30,22 @@ static bool did_we_traceroute_to_target(t_tr *tr)
 	t_replies *temp = tr->replies;
 
 	// Get last response node
-	if (!temp)
-		return false;
+	if (!temp) return false;
 	while(temp->next) temp = temp->next;
 
 	LOG(DEBUG MAGENTA "target string = %s" RESET, tr->hostname);
-	LOG(DEBUG MAGENTA "reversed dn string = %s" RESET, temp->reversed_dns_str);
+	LOG(DEBUG MAGENTA "reversed dns string = %s" RESET, temp->reversed_dns_str);
 	LOG(DEBUG MAGENTA "target IP = %u" RESET, tr->ip);
 	LOG(DEBUG MAGENTA "reversed IP = %u" RESET, temp->reversed_ip);
+	LOG(DEBUG MAGENTA "icmp reply type : %d" RESET, temp->reply.type);
+	LOG(DEBUG MAGENTA "reply type == 0 -> ICMP_ECHOREPLY" RESET, temp->reply.type);
+	LOG(DEBUG MAGENTA "reply type == 11 -> ICMP_TIME_EXCEEDED" RESET, temp->reply.type);
+	LOG(DEBUG MAGENTA "reply type == 3 -> ICMP_DEST_UNREACH" RESET, temp->reply.type);
 	
 	// Actual check
-	if (tr->ip == temp->reversed_ip) g_is_running = false;
+	// if (tr->ip == temp->reversed_ip) g_is_running = false;
+	if (temp->reply.type == ICMP_ECHOREPLY) g_is_running = false;
+	// if (temp->reply.type == ICMP_DEST_UNREACH) g_is_running = false;
 	return (tr->ip == temp->reversed_ip);
 }
 
@@ -49,7 +55,7 @@ static char *get_last_ip_str_returned(t_tr *tr)
 
 	if (!temp) return (NULL);
 	while (temp->next) temp = temp->next;
-	return (temp->reversed_ip_str);
+	return (strdup(temp->reversed_ip_str));
 }
 
 static void traceroute_loop(t_tr *tr)
@@ -65,11 +71,11 @@ static void traceroute_loop(t_tr *tr)
 	LOG(MAGENTA "port = %d" RESET, tr->port);
 
 	printf(GREEN "traceroute to %s (%s), %d hops max\n" RESET, tr->hostname, tr->ip_str, tr->max_hops);
-	uint8_t	hop_count = 1;
+	uint8_t	hop_count = 0;
 	while (g_is_running)
 	{
 		did_we_traceroute_to_target(tr);
-		print_hop_count_formatted(hop_count);
+		print_hop_count_formatted(hop_count + 1);
 
 		uint8_t	probe_count = 0;
 		while (g_is_running && probe_count < tr->probes_per_hop)
@@ -89,14 +95,16 @@ static void traceroute_loop(t_tr *tr)
 			float time_taken = deserialize_icmp_packet(tr, start);
 
 			// Print informations
-			if (probe_count == 1) printf("%s  ", get_last_ip_str_returned(tr));
+			char *last_reversed_ip_str = get_last_ip_str_returned(tr);
+			if (probe_count == 1) printf("%s  ", last_reversed_ip_str);
+			if (last_reversed_ip_str) free(last_reversed_ip_str);
 			if (time_taken == -1.0)
 			{
 				sleep(tr->response_timeout_for_each_probe);
 				printf("*  ");
 			}
 			else printf("%.3""fms  ", time_taken);
-			if (probe_count == tr->probes_per_hop - 1) printf("\n"); // New line after the last probe result
+			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
 		}
 
 		// Increment the ttl
@@ -200,6 +208,7 @@ static void free_traceroute(t_tr *tr unused)
 	while (echo_reply)
 	{
 		t_replies *next = echo_reply->next;
+		if (echo_reply->reversed_ip_str) free(echo_reply->reversed_ip_str);
 		free(echo_reply);
 		echo_reply = next;
 	}

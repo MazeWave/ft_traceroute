@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <stddef.h>
+#include <stdint.h>
 
 char *transform_raw_ip_to_string_ip(const unsigned int ip)
 {
@@ -27,7 +29,7 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 {
 	AUTO_LOG;
 
-	void		*buffer = NULL;
+	uint8_t		*buffer = NULL;
 	size_t		buffer_size = tr->packet_len;
 	t_replies	*new_reply_node = NULL;
 	t_replies	**tail = &tr->replies;
@@ -62,8 +64,8 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 		return (-1.0);
 	}
 	// Fill in additionnal information about the echo reply in the new node
-	new_reply_node->reply = *((t_icmp_header *)(buffer + offset));
-	new_reply_node->offset = offset;
+	new_reply_node->reply = *((t_icmp_header *)(buffer + 20));
+	// new_reply_node->offset = 20;
 	new_reply_node->length = tr->packet_len;
 	new_reply_node->reversed_ip = src.sin_addr.s_addr;
 	new_reply_node->reversed_ip_str = transform_raw_ip_to_string_ip(src.sin_addr.s_addr);
