@@ -26,8 +26,8 @@ CC		=	gcc
 
 UNAME_S	:=	$(shell uname -s)
 
-# CFLAGS	=	-Wall -Wextra -Werror -DPRINT_LOGS -std=c23 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -fsanitize=address
-CFLAGS	=	-Wall -Wextra -Werror -std=c23 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -fsanitize=address
+CFLAGS	=	-Wall -Wextra -Werror -DPRINT_LOGS -std=c23 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -fsanitize=address
+# CFLAGS	=	-Wall -Wextra -Werror -std=c23 -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE -fsanitize=address
 # CFLAGS	=	-Wall -Wextra -Werror -std=c23 -D_POSIX_C_SOURCE=200809L
 
 ifeq ($(UNAME_S),Darwin)

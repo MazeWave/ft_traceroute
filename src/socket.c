@@ -49,7 +49,7 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	if (recvfrom(tr->sockfd, buffer, buffer_size, 0, (struct sockaddr *)&src, &src_len) < 0)
 	{
 		free(buffer);
-		LOG(RED "%s: recv: Failed to receive ICMP packet.\n" RESET, tr->program_name);
+		LOG(RED "%s: recvfrom: Failed to receive ICMP packet.\n" RESET, tr->program_name);
 		return (-1.0);
 	}
 
@@ -98,9 +98,7 @@ void serialize_icmp_packet(t_tr *tr)
 	AUTO_LOG;
 
 	size_t i = 0;
-	// size_t len = sizeof(tr->icmp_packet) + tr->payload_length;
 	uint8_t *buf = (uint8_t *)&tr->icmp_packet;
-	// uint8_t *payload_data = (uint8_t *)tr->payload_raw_string;
 
 	tr->packet = calloc(tr->packet_len, sizeof(uint8_t));
 	if (!tr->packet)
@@ -117,12 +115,6 @@ void serialize_icmp_packet(t_tr *tr)
 		buf++;
 		i++;
 	}
-	// Serialize payload data
-	// while (payload_data && i < len)
-	// {
-	// 	tr->packet[i] = payload_data[i - sizeof(tr->icmp_packet)];
-	// 	i++;
-	// }
 	return;
 }
 
@@ -163,9 +155,11 @@ int create_icmp_socket(t_tr *tr)
 
 	// Set the socket timeout for receiving packets and being non-blocking
 	struct timeval tv;
-	tv.tv_sec = tr->response_timeout_for_each_probe;
-	tv.tv_usec = (tr->response_timeout_for_each_probe - tv.tv_sec) * 1000000.0;
-	setsockopt(tr->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); // set socket to be non-blocking
+	// tv.tv_sec = tr->response_timeout_for_each_probe;
+	// tv.tv_usec = 0;
+	tv.tv_sec = 0;
+	tv.tv_usec = 100000;
+	setsockopt(tr->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); // set socket to wait x seconds for a response
 	setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &tr->ttl, sizeof(tr->ttl)); // set the TTL
 	return (EXIT_SUCCESS);
 }

@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <netinet/ip_icmp.h>
 
 volatile bool g_is_running = true;
 
@@ -41,7 +40,7 @@ static bool did_we_traceroute_to_target(t_tr *tr)
 	LOG(DEBUG MAGENTA "reply type == 0 -> ICMP_ECHOREPLY" RESET, temp->reply.type);
 	LOG(DEBUG MAGENTA "reply type == 11 -> ICMP_TIME_EXCEEDED" RESET, temp->reply.type);
 	LOG(DEBUG MAGENTA "reply type == 3 -> ICMP_DEST_UNREACH" RESET, temp->reply.type);
-	
+
 	// Actual check
 	// if (tr->ip == temp->reversed_ip) g_is_running = false;
 	if (temp->reply.type == ICMP_ECHOREPLY) g_is_running = false;
@@ -93,17 +92,32 @@ static void traceroute_loop(t_tr *tr)
 			// Listen for the reply
 			struct timeval start = get_time();
 			float time_taken = deserialize_icmp_packet(tr, start);
+			LOG(DEBUG CYAN "is condition true : %d" RESET, (get_time().tv_sec - start.tv_sec) > tr->response_timeout_for_each_probe);
+			while (
+				   g_is_running
+				&& (get_time().tv_sec - start.tv_sec) > tr->response_timeout_for_each_probe
+				&& (time_taken == -1.0)
+			)
+			{
+				// This poll each 100ms to wait for a response
+				time_taken = deserialize_icmp_packet(tr, start);
+				LOG(DEBUG MAGENTA "POLL" RESET);
+			}
 
 			// Print informations
 			char *last_reversed_ip_str = get_last_ip_str_returned(tr);
-			if (probe_count == 1) printf("%s  ", last_reversed_ip_str);
+			if (probe_count == 1 && last_reversed_ip_str) printf("%s  ", last_reversed_ip_str);
 			if (last_reversed_ip_str) free(last_reversed_ip_str);
-			if (time_taken == -1.0)
-			{
-				sleep(tr->response_timeout_for_each_probe);
-				printf("*  ");
-			}
+			if (time_taken == -1.0) printf("*  ");
+			// if (time_taken == -1.0)
+			// {
+			// 	LOG(DEBUG RED "SLEEPING..." RESET);
+			// 	sleep(tr->response_timeout_for_each_probe);
+			// 	LOG(DEBUG RED "...RESUMED" RESET);
+			// 	printf("*  ");
+			// }
 			else printf("%.3""fms  ", time_taken);
+			fflush(stdout);
 			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
 		}
 
