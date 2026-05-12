@@ -14,8 +14,6 @@
 
 volatile bool g_is_running = true;
 
-
-
 static void print_hop_count_formatted(uint8_t n)
 {
 	if (n < 10) printf(CYAN"  %d   "RESET, n);
@@ -42,10 +40,8 @@ static bool did_we_traceroute_to_target(t_tr *tr)
 	LOG(DEBUG MAGENTA "reply type == 3 -> ICMP_DEST_UNREACH" RESET, temp->reply.type);
 
 	// Actual check
-	// if (tr->ip == temp->reversed_ip) g_is_running = false;
-	if (temp->reply.type == ICMP_ECHOREPLY) g_is_running = false;
-	// if (temp->reply.type == ICMP_DEST_UNREACH) g_is_running = false;
-	return (tr->ip == temp->reversed_ip);
+	if (temp->reply.type == ICMP_ECHOREPLY && tr->ip == temp->reversed_ip) g_is_running = false;
+	return (temp->reply.type == ICMP_ECHOREPLY && tr->ip == temp->reversed_ip);
 }
 
 static char *get_last_ip_str_returned(t_tr *tr)
@@ -116,8 +112,10 @@ static void traceroute_loop(t_tr *tr)
 
 		// Increment the ttl
 		tr->ttl++;
-		setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &tr->ttl, sizeof(tr->ttl));
-		if (tr->ttl >= tr->max_hops) g_is_running = false;
+		uint32_t	final_ttl = tr->ttl + tr->offset_hop;
+		setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(tr->ttl));
+		// Check if we surpassed the max_hop count
+		if (tr->ttl > tr->max_hops) g_is_running = false;
 		// Increment the hop count
 		hop_count++;
 	}

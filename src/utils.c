@@ -40,61 +40,11 @@ void handle_sigint(int signum unused)
 {
 	AUTO_LOG;
 
-	LOG(YELLOW "signal %d received, stopping ping" RESET, signum);
-	printf("stopping...\n");	
+	LOG(YELLOW "signal %d received, stopping traceroute" RESET, signum);
+	printf("stopping...\n");
 	g_is_running = false;
 	return;
 }
-
-// void	print_end_statistics(t_tr *tr)
-// {
-// 	AUTO_LOG;
-
-// 	t_replies	*temp = tr->replies;
-// 	float		round_trip_avg = 0.0;
-// 	float		round_trip_max = 0.0;
-// 	float		round_trip_min = INT_MAX;
-// 	float		round_trip_ecart_type = 0;
-// 	float		round_trip_sum = 0;
-// 	float		round_trip_squared_sum = 0;
-
-// 	while (temp)
-// 	{
-// 		(round_trip_min > temp->elapsed_time_in_ms) ? round_trip_min = temp->elapsed_time_in_ms : round_trip_min;
-// 		(round_trip_max < temp->elapsed_time_in_ms) ? round_trip_max = temp->elapsed_time_in_ms : round_trip_max;
-// 		round_trip_avg += temp->elapsed_time_in_ms;
-// 		round_trip_sum += temp->elapsed_time_in_ms;
-// 		round_trip_squared_sum += pow(temp->elapsed_time_in_ms, 2);
-// 		temp = temp->next;
-// 	}
-// 	if (tr->packet_recieved_count > 0) round_trip_avg /= tr->packet_recieved_count;
-// 	if (tr->packet_recieved_count > 0) round_trip_ecart_type = sqrt(
-// 																		(round_trip_squared_sum / tr->packet_recieved_count)
-// 																		- pow(round_trip_sum / tr->packet_recieved_count, 2)
-// 																	);
-// 	if (isnan(round_trip_ecart_type)) round_trip_ecart_type = 0;
-
-// 	tr->total_time_elapsed = get_time();
-// 	printf(YELLOW "\n--- %s ping statistics ---\n" RESET, tr->hostname);
-// 	int	packet_loss = (int)((1.0 - ((float)tr->packet_recieved_count / (float)tr->packet_sent_count)) * 100);
-// 	if (packet_loss == INT_MAX || packet_loss == INT_MIN) packet_loss = 0;
-// 	printf(
-// 		YELLOW "%d packets transmitted, %d packets received, %d%% packet loss\n" RESET,
-// 		tr->packet_sent_count,
-// 		tr->packet_recieved_count,
-// 		packet_loss
-// 	);
-// 	if (tr->packet_recieved_count == 0 && tr->packet_sent_count > 0) return ;
-// 	printf(
-// 		YELLOW "round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n" RESET,
-// 		round_trip_min,
-// 		round_trip_avg,
-// 		round_trip_max,
-// 		round_trip_ecart_type
-// 	);
-
-// 	return ;
-// }
 
 void print_echo_reply(t_tr *tr)
 {

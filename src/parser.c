@@ -43,20 +43,20 @@ void find_the_ip(t_tr *tr)
 	AUTO_LOG;
 
 	struct addrinfo *temp = tr->addr_info;
-	while (temp)
-	{
-		LOG(BLUE);
-		LOG("--------------------------------");
-		LOG("ai_family: %d", temp->ai_family);
-		LOG("ai_socktype: %d", temp->ai_socktype);
-		LOG("ai_protocol: %d", temp->ai_protocol);
-		LOG("ai_addrlen: %d", temp->ai_addrlen);
-		LOG("ai_addr: %p", temp->ai_addr);
-		get_sockaddr((struct sockaddr_in *)temp->ai_addr, tr);
-		LOG("ai_canonname: %s", temp->ai_canonname);
-		LOG(RESET);
-		temp = temp->ai_next;
-	}
+	// while (temp)
+	// {
+	LOG(BLUE);
+	LOG("--------------------------------");
+	LOG("ai_family: %d", temp->ai_family);
+	LOG("ai_socktype: %d", temp->ai_socktype);
+	LOG("ai_protocol: %d", temp->ai_protocol);
+	LOG("ai_addrlen: %d", temp->ai_addrlen);
+	LOG("ai_addr: %p", temp->ai_addr);
+	get_sockaddr((struct sockaddr_in *)temp->ai_addr, tr);
+	LOG("ai_canonname: %s", temp->ai_canonname);
+	LOG(RESET);
+	// 	temp = temp->ai_next;
+	// }
 	return;
 }
 
