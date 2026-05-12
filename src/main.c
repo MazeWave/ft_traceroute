@@ -113,7 +113,7 @@ static void traceroute_loop(t_tr *tr)
 		// Increment the ttl
 		tr->ttl++;
 		uint32_t	final_ttl = tr->ttl + tr->offset_hop;
-		setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(tr->ttl));
+		setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl));
 		// Check if we surpassed the max_hop count
 		if (tr->ttl > tr->max_hops) g_is_running = false;
 		// Increment the hop count
