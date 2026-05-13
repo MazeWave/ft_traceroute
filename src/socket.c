@@ -77,13 +77,17 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	new_reply_node->elapsed_time_in_usec = elapsed_usec;
 	new_reply_node->elapsed_time_in_ms = elapsed_usec / 1000.0;
 	new_reply_node->elapsed_time_in_seconds = elapsed_usec / 1000000.0;
-	new_reply_node->reversed_ttl = (tr->is_root) ? ((struct ip *)buffer)->ip_ttl : 0;
+	new_reply_node->reversed_ttl = ((struct ip *)buffer)->ip_ttl;
+	// new_reply_node->reversed_dns_str = (tr->is_root) ? ((struct ip *)buffer)->ip_ttl : 0;
 	LOG(DEBUG "Elapsed time: %.2f s " RESET, new_reply_node->elapsed_time_in_seconds);
 	LOG(DEBUG "Elapsed time: %.2f ms" RESET, new_reply_node->elapsed_time_in_ms);
 	LOG(DEBUG "Elapsed time: %.2f us" RESET, new_reply_node->elapsed_time_in_usec);
 
 	// Add the reversed DNS string to the new node if we can
-	if (getnameinfo((struct sockaddr *)tr->addr_info->ai_addr, tr->addr_info->ai_addrlen, new_reply_node->reversed_dns_str, NI_MAXHOST, NULL, 0, NI_NAMEREQD) != 0)
+	struct iphdr	*ip_to_resolve = (struct iphdr *)buffer;
+	uint32_t		ip_src = ip_to_resolve->saddr;
+	uint32_t		ip_dest = ip_to_resolve->daddr;
+	if (getnameinfo((struct sockaddr *)&ip_dest, sizeof(ip_dest), new_reply_node->reversed_dns_str, NI_MAXHOST, NULL, 0, NI_NAMEREQD) != 0)
 		new_reply_node->reversed_dns_str[0] = '\0';
 
 	// Apply the new node to the end of the linked list
