@@ -72,17 +72,15 @@ static void traceroute_loop(t_tr *tr)
 	LOG(MAGENTA "probes_per_hop = %d" RESET, tr->probes_per_hop);
 	LOG(MAGENTA "offset_hop = %d" RESET, tr->offset_hop);
 	LOG(MAGENTA "response_time = %d" RESET, tr->response_timeout_for_each_probe);
-	LOG(MAGENTA "port = %d" RESET, tr->port);
+	LOG(MAGENTA "port = %d" RESET, tr->tos);
 
 	printf(GREEN "traceroute to %s (%s), %d hops max\n" RESET, tr->hostname, tr->ip_str, tr->max_hops);
 	uint8_t	hop_count = 0;
 	while (g_is_running)
 	{
-		// did_we_traceroute_to_target(tr);
 		print_hop_count_formatted(hop_count + 1);
 
 		uint8_t	probe_count = 0;
-		// while (g_is_running && probe_count < tr->probes_per_hop)
 		while (probe_count < tr->probes_per_hop)
 		{
 			// Increment the probe count (default 3 probes per hops)
