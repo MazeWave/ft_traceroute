@@ -159,8 +159,10 @@ int create_icmp_socket(t_tr *tr)
 	// tv.tv_usec = 0;
 	tv.tv_sec = 0;
 	tv.tv_usec = 100000;
+	uint32_t	final_ttl = tr->ttl + tr->offset_hop;
 	setsockopt(tr->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); // set socket to wait x seconds for a response
-	setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &tr->ttl, sizeof(tr->ttl)); // set the TTL
+	setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl)); // set the TTL
+	setsockopt(tr->sockfd, IPPROTO_IP, IP_TOS, &tr->tos, sizeof(tr->tos)); // set the TOS
 	return (EXIT_SUCCESS);
 }
 

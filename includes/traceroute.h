@@ -118,12 +118,13 @@ typedef struct s_tr
 	int			sockfd;
 	bool		is_bonus;
 	bool		is_root;
+	bool		do_reverse_dns;
 	char		*program_name;
 	char		*hostname;
 	char		*ip_str;
 	uint32_t	payload_length;
 	uint32_t	ip;
-	uint32_t	port;
+	uint32_t	tos;
 	uint32_t	ttl;
 	uint32_t	max_hops;
 	uint32_t	offset_hop;

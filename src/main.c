@@ -53,6 +53,15 @@ static char *get_last_ip_str_returned(t_tr *tr)
 	return (strdup(temp->reversed_ip_str));
 }
 
+static char *get_last_dns_str_returned(t_tr *tr)
+{
+	t_replies	*temp = tr->replies;
+
+	if (!temp) return (NULL);
+	while (temp->next) temp = temp->next;
+	return (strdup(temp->reversed_dns_str));
+}
+
 static void traceroute_loop(t_tr *tr)
 {
 	AUTO_LOG;
@@ -102,7 +111,12 @@ static void traceroute_loop(t_tr *tr)
 
 			// Print informations
 			char *last_reversed_ip_str = get_last_ip_str_returned(tr);
+			char *last_reversed_dns_str = get_last_dns_str_returned(tr);
 			if (probe_count == 1 && last_reversed_ip_str) printf("%s  ", last_reversed_ip_str);
+			if (probe_count == 1 && last_reversed_dns_str && tr->do_reverse_dns)
+			{
+				printf("(%s)  ", last_reversed_dns_str);
+			}
 			if (last_reversed_ip_str) free(last_reversed_ip_str);
 			if (time_taken == -1.0) printf("*  ");
 			else printf("%.3""fms  ", time_taken);

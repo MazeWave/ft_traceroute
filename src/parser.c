@@ -73,6 +73,8 @@ void help(t_tr *tr)
 		printf("  -w            : Wait NUM seconds for response (default: 3)\n");
 		printf("  -f            : Set initial hop distance, i.e., time-to-live\n");
 		printf("  -p            : Use destination PORT port (default: 33434)\n");
+		printf("  -t            : Change TOS (Type of Service) to NUM (default: 0)\n");
+		printf("  -r            : Displayed resolved hostnames (if possible)\n");
 		printf("  -h -?         : Print the help\n");
 		return;
 	case false:
@@ -89,7 +91,7 @@ void help(t_tr *tr)
 void version(void)
 {
 	AUTO_LOG;
-	LOG(GREEN "ft_ping -- ldalmass -- version: 7.7.7" RESET);
+	LOG(GREEN "ft_traceroute -- ldalmass -- version: 7.7.7" RESET);
 	return ;
 }
 
@@ -97,19 +99,11 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 {
 	AUTO_LOG;
 
-	// tr->is_quiet = false;
-	// tr->is_flooding = false;
-	// tr->payload_raw_string = NULL;
-	// tr->is_verbose = false;
-	// tr->linger = -1;
-	// tr->preload_count = 0;
-	// tr->payload_length = PING_DEFAULT_DATA_LEN;
-	// tr->packet_sent_count = 0;
-	// tr->packet_recieved_count = 0;
 	tr->program_name = argv[0];
 	tr->is_bonus = (strstr(argv[0], "_bonus") == NULL) ? false : true;
 	tr->is_root = (getuid() == 0);
 	tr->exit_status = false;
+	tr->do_reverse_dns = false;
 	tr->hostname = NULL;
 	tr->ip_str = NULL;
 	tr->addr_info = NULL;
@@ -119,7 +113,7 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 	tr->ttl = 1;
 	tr->max_hops = 64;
 	tr->offset_hop = 0;
-	tr->port = 33434;
+	tr->tos = 0;
 	tr->ip = 0;
 	// tr->count = -1;
 	tr->packet = NULL;
@@ -136,11 +130,18 @@ int parse_args(int argc, char **argv, t_tr *tr)
 	int opt = 0;
 	// static bool has_already_printed_error = false;
 	LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
-	while ((opt = getopt(argc, argv, "-h?m:q:w:f:p:")) != -1)
+	while ((opt = getopt(argc, argv, "-h?rm:q:w:f:t:")) != -1)
 	{
 		LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
 		switch (opt)
 		{
+		case 'r':
+			if (!tr->is_bonus)
+			return (help(tr), tr->exit_status = true);
+			if (atoi(optarg) <= 0) return (printf(RED "Error: The TOS must be at least 0\n" RESET), help(tr), tr->exit_status = true);
+			tr->do_reverse_dns = true;
+			LOG(BLUE "resolve hostname: %d" RESET, tr->do_reverse_dns);
+			break;
 		case 'm':
 			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
 			tr->max_hops = atoi(optarg);
@@ -167,13 +168,14 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			tr->offset_hop = atoi(optarg);
 			LOG(BLUE "offset_hop: %d" RESET, tr->offset_hop);
 			break;
-		case 'p':
+		case 't':
 			if (!tr->is_bonus)
 			return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0 || atoi(optarg) > 65535) return (printf(RED "Error: The port must be between 0 and 65535\n" RESET), help(tr), tr->exit_status = true);
-			tr->port = atoi(optarg);
-			LOG(BLUE "port: %d" RESET, tr->port);
+			if (atoi(optarg) <= 0) return (printf(RED "Error: The TOS must be at least 0\n" RESET), help(tr), tr->exit_status = true);
+			tr->tos = atoi(optarg);
+			LOG(BLUE "tos: %d" RESET, tr->tos);
 			break;
+		
 		case 'h':
 			return (help(tr), tr->exit_status = false, EXIT_FAILURE);
 		case '?':
