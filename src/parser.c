@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:11:05 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/04/29 16:39:02 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/13 14:30:35 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,18 +163,16 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			tr->response_timeout_for_each_probe = atoi(optarg);
 			LOG(BLUE "response_time: %d" RESET, tr->response_timeout_for_each_probe);
 			break;
-		case 'l':
+		case 'f':
 			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0 || atoi(optarg) > 65535) return (printf(RED "Error: The max hop must be between 0 and 64\n" RESET),
-			help(tr), tr->exit_status = true);
-			tr->max_hops = atoi(optarg);
-			LOG(BLUE "port: %d" RESET, tr->port);
+			if (atoi(optarg) <= 0) return (printf(RED "Error: The initial hop distance must be at least 1\n" RESET), help(tr), tr->exit_status = true);
+			tr->offset_hop = atoi(optarg);
+			LOG(BLUE "offset_hop: %d" RESET, tr->offset_hop);
 			break;
 		case 'p':
 			if (!tr->is_bonus)
 			return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0 || atoi(optarg) > 65535) return (printf(RED "Error: The port must be between 0 and 65535\n" RESET),
-			help(tr), tr->exit_status = true);
+			if (atoi(optarg) <= 0 || atoi(optarg) > 65535) return (printf(RED "Error: The port must be between 0 and 65535\n" RESET), help(tr), tr->exit_status = true);
 			tr->port = atoi(optarg);
 			LOG(BLUE "port: %d" RESET, tr->port);
 			break;

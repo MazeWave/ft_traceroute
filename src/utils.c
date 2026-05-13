@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:10:44 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/04/29 14:26:59 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/0505/1313 14:3232:5656 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ void handle_sigint(int signum unused)
 	AUTO_LOG;
 
 	LOG(YELLOW "signal %d received, stopping traceroute" RESET, signum);
-	printf("stopping...\n");
 	g_is_running = false;
 	return;
 }
