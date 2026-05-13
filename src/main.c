@@ -118,6 +118,7 @@ static void traceroute_loop(t_tr *tr)
 				printf("(%s)  ", last_reversed_dns_str);
 			}
 			if (last_reversed_ip_str) free(last_reversed_ip_str);
+			if (last_reversed_dns_str) free(last_reversed_dns_str);
 			if (time_taken == -1.0) printf("*  ");
 			else printf("%.3""fms  ", time_taken);
 			fflush(stdout);

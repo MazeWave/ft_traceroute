@@ -136,9 +136,8 @@ int parse_args(int argc, char **argv, t_tr *tr)
 		switch (opt)
 		{
 		case 'r':
-			if (!tr->is_bonus)
-			return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0) return (printf(RED "Error: The TOS must be at least 0\n" RESET), help(tr), tr->exit_status = true);
+			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
+			// if (atoi(optarg) <= 0) return (printf(RED "Error: The TOS must be at least 0\n" RESET), help(tr), tr->exit_status = true);
 			tr->do_reverse_dns = true;
 			LOG(BLUE "resolve hostname: %d" RESET, tr->do_reverse_dns);
 			break;
