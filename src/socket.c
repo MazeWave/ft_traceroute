@@ -85,7 +85,7 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 
 	// Add the reversed DNS string to the new node if we can
 	struct iphdr	*ip_to_resolve = (struct iphdr *)buffer;
-	uint32_t		ip_src = ip_to_resolve->saddr;
+	// uint32_t		ip_src = ip_to_resolve->saddr;
 	uint32_t		ip_dest = ip_to_resolve->daddr;
 	if (getnameinfo((struct sockaddr *)&ip_dest, sizeof(ip_dest), new_reply_node->reversed_dns_str, NI_MAXHOST, NULL, 0, NI_NAMEREQD) != 0)
 		new_reply_node->reversed_dns_str[0] = '\0';
