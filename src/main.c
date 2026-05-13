@@ -78,7 +78,7 @@ static void traceroute_loop(t_tr *tr)
 	uint8_t	hop_count = 0;
 	while (g_is_running)
 	{
-		did_we_traceroute_to_target(tr);
+		// did_we_traceroute_to_target(tr);
 		print_hop_count_formatted(hop_count + 1);
 
 		uint8_t	probe_count = 0;
