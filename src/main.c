@@ -115,7 +115,8 @@ static void traceroute_loop(t_tr *tr)
 			if (probe_count == 1 && last_reversed_ip_str) printf("%s  ", last_reversed_ip_str);
 			if (probe_count == 1 && last_reversed_dns_str && tr->do_reverse_dns)
 			{
-				printf("(%s)  ", last_reversed_dns_str);
+				if (last_reversed_dns_str[0] == '\0') printf ("(%s)  ", last_reversed_ip_str);
+				else printf("(%s)  ", last_reversed_dns_str);
 			}
 			if (last_reversed_ip_str) free(last_reversed_ip_str);
 			if (last_reversed_dns_str) free(last_reversed_dns_str);
