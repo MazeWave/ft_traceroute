@@ -82,7 +82,8 @@ static void traceroute_loop(t_tr *tr)
 		print_hop_count_formatted(hop_count + 1);
 
 		uint8_t	probe_count = 0;
-		while (g_is_running && probe_count < tr->probes_per_hop)
+		// while (g_is_running && probe_count < tr->probes_per_hop)
+		while (probe_count < tr->probes_per_hop)
 		{
 			// Increment the probe count (default 3 probes per hops)
 			probe_count++;
