@@ -12,8 +12,6 @@
 
 #include "../includes/traceroute.h"
 
-// void
-
 void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 {
 	AUTO_LOG;
