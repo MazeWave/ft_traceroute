@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/05/15 13:28:37 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 13:45:18 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,11 +117,11 @@ static void traceroute_loop(t_tr *tr)
 			if (probe_count == 1 && last_reversed_dns_str && tr->do_reverse_dns)
 			{
 				if (last_reversed_dns_str[0] == '\0') printf (YELLOW "(%s)  " RESET, last_reversed_ip_str);
-				else printf(RED "(%s)  " RESET, last_reversed_dns_str);
+				else printf(YELLOW "(%s)  " RESET, last_reversed_dns_str);
 			}
 			if (last_reversed_ip_str) free(last_reversed_ip_str);
 			if (last_reversed_dns_str) free(last_reversed_dns_str);
-			if (time_taken == -1.0) printf("*  ");
+			if (time_taken == -1.0) printf(RED "*  " RESET);
 			else printf("%.3""fms  ", time_taken);
 			fflush(stdout);
 			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
