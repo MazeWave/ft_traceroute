@@ -70,39 +70,39 @@ void handle_sigint(int signum unused)
 // 	return;
 // }
 
-void print_bits(uint32_t n)
-{
-	for (int i = 31; i >= 0; i--)
-	{
-		putchar((n >> i) & 1 ? '1' : '0');
-		if (i % 8 == 0)
-			putchar(' ');
-	}
-	putchar('\n');
-}
+// void print_bits(uint32_t n)
+// {
+// 	for (int i = 31; i >= 0; i--)
+// 	{
+// 		putchar((n >> i) & 1 ? '1' : '0');
+// 		if (i % 8 == 0)
+// 			putchar(' ');
+// 	}
+// 	putchar('\n');
+// }
 
-void print_packet_informations(t_tr *tr unused)
-{
-	AUTO_LOG;
+// void print_packet_informations(t_tr *tr unused)
+// {
+// 	AUTO_LOG;
 
-	LOG(CYAN "[HEADER]" RESET);
-	LOG(BLUE "Packet sequence: %d" RESET, tr->icmp_packet.sequence_number);
-	LOG(BLUE "Type: %d" RESET, tr->icmp_packet.type);
-	LOG(BLUE "Code: %d" RESET, tr->icmp_packet.code);
-	LOG(CYAN "Checksum: %d" RESET, tr->icmp_packet.checksum);
-	LOG(CYAN "Identifier: %d" RESET, tr->icmp_packet.identifier);
-	LOG(BLUE "[PAYLOAD]" RESET);
-	return;
-}
+// 	LOG(CYAN "[HEADER]" RESET);
+// 	LOG(BLUE "Packet sequence: %d" RESET, tr->icmp_packet.sequence_number);
+// 	LOG(BLUE "Type: %d" RESET, tr->icmp_packet.type);
+// 	LOG(BLUE "Code: %d" RESET, tr->icmp_packet.code);
+// 	LOG(CYAN "Checksum: %d" RESET, tr->icmp_packet.checksum);
+// 	LOG(CYAN "Identifier: %d" RESET, tr->icmp_packet.identifier);
+// 	LOG(BLUE "[PAYLOAD]" RESET);
+// 	return;
+// }
 
-void print_ping_struct(t_tr *tr unused)
-{
-	AUTO_LOG;
-	LOG(BLUE);
-	LOG("is_bonus: %d", tr->is_bonus);
-	LOG("is_root: %d", tr->is_root);
-	// LOG("count: %d", tr->count);
-	LOG("hostname: %s", tr->hostname);
-	LOG("sockfd: %d", tr->sockfd);
-	LOG(RESET);
-}
+// void print_ping_struct(t_tr *tr unused)
+// {
+// 	AUTO_LOG;
+// 	LOG(BLUE);
+// 	LOG("is_bonus: %d", tr->is_bonus);
+// 	LOG("is_root: %d", tr->is_root);
+// 	// LOG("count: %d", tr->count);
+// 	LOG("hostname: %s", tr->hostname);
+// 	LOG("sockfd: %d", tr->sockfd);
+// 	LOG(RESET);
+// }
