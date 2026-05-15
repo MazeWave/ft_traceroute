@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:10:54 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/05/15 15:08:34 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 15:14:51 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,8 +151,7 @@ int create_icmp_socket(t_tr *tr)
 	// Check if the socket was created successfully
 	if (tr->sockfd < 0)
 		return (close(tr->sockfd),
-			printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, tr->program_name, tr->sockfd),
-			EXIT_FAILURE);
+			printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, tr->program_name, tr->sockfd),EXIT_FAILURE);
 
 	// Set the socket timeout for receiving packets and being non-blocking
 	struct timeval tv;
