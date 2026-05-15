@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:11:05 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/05/15 14:56:46 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 14:58:56 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,6 @@ void find_the_ip(t_tr *tr)
 	AUTO_LOG;
 
 	struct addrinfo *temp = tr->addr_info;
-	// while (temp)
-	// {
 	LOG(BLUE);
 	LOG("--------------------------------");
 	LOG("ai_family: %d", temp->ai_family);
@@ -53,8 +51,6 @@ void find_the_ip(t_tr *tr)
 	get_sockaddr((struct sockaddr_in *)temp->ai_addr, tr);
 	LOG("ai_canonname: %s", temp->ai_canonname);
 	LOG(RESET);
-	// 	temp = temp->ai_next;
-	// }
 	return;
 }
 
@@ -118,7 +114,6 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 	tr->offset_hop = 0;
 	tr->tos = 0;
 	tr->ip = 0;
-	// tr->count = -1;
 	tr->packet = NULL;
 	tr->packet_len = sizeof(t_icmp_header) + PING_DEFAULT_DATA_LEN;
 	tr->probes_per_hop = 3;
@@ -131,7 +126,6 @@ int parse_args(int argc, char **argv, t_tr *tr)
 {
 	AUTO_LOG;
 	int opt = 0;
-	// static bool has_already_printed_error = false;
 	LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
 	while ((opt = getopt(argc, argv, "-h?rm:q:w:f:t:")) != -1)
 	{
@@ -140,7 +134,6 @@ int parse_args(int argc, char **argv, t_tr *tr)
 		{
 		case 'r':
 			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
-			// if (atoi(optarg) <= 0) return (printf(RED "Error: The TOS must be at least 0\n" RESET), help(tr), tr->exit_status = true);
 			tr->do_reverse_dns = true;
 			LOG(BLUE "resolve hostname: %d" RESET, tr->do_reverse_dns);
 			break;
@@ -184,9 +177,6 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			return (help(tr), tr->exit_status = false, EXIT_FAILURE);
 			default:
 			if (tr->hostname == NULL) tr->hostname = optarg;
-			// else if (tr->is_verbose)
-			// 	if (!has_already_printed_error++) printf(RED "Error: Multiple
-			// hostnames provided. Only the first one will be used.\n" RESET);
 			LOG(RED "Used Hostname: %s" RESET, tr->hostname);
 			LOG(RED "Current read Hostname: %s" RESET, optarg);
 			break;

@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/05/15 13:48:51 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 15:01:50 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,11 @@ static void traceroute_loop(t_tr *tr)
 			struct timeval start = get_time();
 			float time_taken = deserialize_icmp_packet(tr, start);
 			LOG(DEBUG CYAN "is condition true : %d" RESET, (get_time().tv_sec - start.tv_sec) > tr->response_timeout_for_each_probe);
+
+			// This while functions like a linger,
+			// instead of blocking the program for a fixed amount of time,
+			// it polls for a response until the response timeout is reached,
+			// allowing to quit the program if a signal is received within 100ms
 			while (
 				   g_is_running
 				&& (get_time().tv_sec - start.tv_sec) < tr->response_timeout_for_each_probe
@@ -127,90 +132,82 @@ static void traceroute_loop(t_tr *tr)
 			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
 		}
 
-		// Increment the ttl
+		// Increment the ttl and hop count
 		tr->ttl++;
 		uint32_t	final_ttl = tr->ttl + tr->offset_hop;
 		setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl));
+		hop_count++;
 		// Check if we surpassed the max_hop count
 		if (tr->ttl > tr->max_hops) g_is_running = false;
-		// Increment the hop count
-		hop_count++;
 	}
 	return ;
 }
 
-static void ping_loop(t_tr *tr)
-{
-	AUTO_LOG;
+// static void ping_loop(t_tr *tr)
+// {
+// 	AUTO_LOG;
 
-	// printf(
-	// 	BLUE "PING %s (%s): %u data bytes" RESET,
-	// 	tr->hostname,
-	// 	tr->ip_str,
-	// 	tr->payload_length
-	// );
+// 	struct timeval timeout_start = get_time();
 
-	struct timeval timeout_start = get_time();
+// 	// Main ping loop
+// 	while (g_is_running)
+// 	{
+// 		// if (did_we_timeout(timeout_start, tr)) g_is_running = false;
+// 		// if (tr->count > tr->max_hops) g_is_running = false;
+// 		// if (tr->count == 0) break;
+// 		// if (tr->count != -1) tr->count--;
+// 		if (!g_is_running) break;
 
-	// Main ping loop
-	while (g_is_running)
-	{
-		// if (did_we_timeout(timeout_start, tr)) g_is_running = false;
-		// if (tr->count > tr->max_hops) g_is_running = false;
-		// if (tr->count == 0) break;
-		// if (tr->count != -1) tr->count--;
-		if (!g_is_running) break;
+// 		// Build the ping packet
+// 		build_traceroute_packet(tr);
 
-		// Build the ping packet
-		build_traceroute_packet(tr);
+// 		// Send the ping
+// 		struct timeval start = get_time();
+// 		send_packet(tr);
 
-		// Send the ping
-		struct timeval start = get_time();
-		send_packet(tr);
+// 		// Listen to the echo reply
+// 		float elapsed_time_in_seconds = deserialize_icmp_packet(tr, start);
 
-		// Listen to the echo reply
-		float elapsed_time_in_seconds = deserialize_icmp_packet(tr, start);
+// 		// Recieve the echo icmp packet and display timings
+// 		print_echo_reply(tr);
 
-		// Recieve the echo icmp packet and display timings
-		print_echo_reply(tr);
+// 		// Account for interval
+// 		float remaining = tr->interval - elapsed_time_in_seconds;
+// 		if (tr->response_timeout_for_each_probe != -1)
+// 		{
+// 			struct timeval deadline = get_time();
+// 			// remaining = tr->timeout - (deadline.tv_sec - timeout_start.tv_sec);
+// 			float deadline_time = tr->response_timeout_for_each_probe - (deadline.tv_sec - timeout_start.tv_sec);
+// 			if (deadline_time < remaining)
+// 				remaining = deadline_time;
+// 		}
+// 		if (remaining > 0)
+// 		{
+// 			LOG(DEBUG RED "remaining : %f seconds" RESET, remaining);
+// 			struct timespec ts;
+// 			ts.tv_sec = remaining;
+// 			ts.tv_nsec = (remaining - ts.tv_sec) * 1000000000;
+// 			nanosleep(&ts, NULL);
+// 		}
+// 		// tr->packet_sent_count++;
+// 		// tr->count++;
+// 		// LOG(DEBUG "count = %d" RESET, tr->count);
+// 	}
 
-		// Account for interval
-		float remaining = tr->interval - elapsed_time_in_seconds;
-		if (tr->response_timeout_for_each_probe != -1)
-		{
-			struct timeval deadline = get_time();
-			// remaining = tr->timeout - (deadline.tv_sec - timeout_start.tv_sec);
-			float deadline_time = tr->response_timeout_for_each_probe - (deadline.tv_sec - timeout_start.tv_sec);
-			if (deadline_time < remaining)
-				remaining = deadline_time;
-		}
-		if (remaining > 0)
-		{
-			LOG(DEBUG RED "remaining : %f seconds" RESET, remaining);
-			struct timespec ts;
-			ts.tv_sec = remaining;
-			ts.tv_nsec = (remaining - ts.tv_sec) * 1000000000;
-			nanosleep(&ts, NULL);
-		}
-		// tr->packet_sent_count++;
-		// tr->count++;
-		// LOG(DEBUG "count = %d" RESET, tr->count);
-	}
-
-	// Linger option
-	// struct timeval	linger_start = get_time();
-	// if (tr->linger != -1)
-	// {
-	// 	while (
-	// 		   !did_we_exceed_in_seconds(linger_start, tr->linger)
-	// 		&& !did_we_timeout(timeout_start, ping)
-	// 		&& g_is_running
-	// 	)
-	// 		deserialize_icmp_packet(ping, linger_start);
-	// }
-	// print_end_statistics(ping);
-	return;
-}
+// 	// Linger option
+// 	// struct timeval	linger_start = get_time();
+// 	// if (tr->linger != -1)
+// 	// {
+// 	// 	while (
+// 	// 		   !did_we_exceed_in_seconds(linger_start, tr->linger)
+// 	// 		&& !did_we_timeout(timeout_start, ping)
+// 	// 		&& g_is_running
+// 	// 	)
+// 	// 		deserialize_icmp_packet(ping, linger_start);
+// 	// }
+// 	// print_end_statistics(ping);
+// 	return;
+// }
 
 static void free_traceroute(t_tr *tr unused)
 {
