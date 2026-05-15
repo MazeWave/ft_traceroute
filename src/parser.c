@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:11:05 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/05/13 14:30:35 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 14:56:46 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,9 +72,12 @@ void help(t_tr *tr)
 		printf("  -q            : Send NUM probe packets per hop (default: 3)\n");
 		printf("  -w            : Wait NUM seconds for response (default: 3)\n");
 		printf("  -f            : Set initial hop distance, i.e., time-to-live\n");
-		printf("  -p            : Use destination PORT port (default: 33434)\n");
-		printf("  -t            : Change TOS (Type of Service) to NUM (default: 0)\n");
 		printf("  -r            : Displayed resolved hostnames (if possible)\n");
+		printf("  -t            : Change TOS (Type of Service) to NUM (default: 0)\n");
+		printf("                : 0		(Best effort)(default)\n");
+		printf("                : 16	(Low delay)\n");
+		printf("                : 40	(Low priority data)\n");
+		printf("                : 184	(VoIP and real-time audio transmission)\n");
 		printf("  -h -?         : Print the help\n");
 		return;
 	case false:
@@ -170,7 +173,7 @@ int parse_args(int argc, char **argv, t_tr *tr)
 		case 't':
 			if (!tr->is_bonus)
 			return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0) return (printf(RED "Error: The TOS must be at least 0\n" RESET), help(tr), tr->exit_status = true);
+			if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: The TOS must be between 0 and 255\n" RESET), help(tr), tr->exit_status = true);
 			tr->tos = atoi(optarg);
 			LOG(BLUE "tos: %d" RESET, tr->tos);
 			break;
