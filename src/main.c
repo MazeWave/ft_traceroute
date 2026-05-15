@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/05/15 13:45:18 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 13:48:26 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,8 +113,8 @@ static void traceroute_loop(t_tr *tr)
 			// Print informations
 			char *last_reversed_ip_str = get_last_ip_str_returned(tr);
 			char *last_reversed_dns_str = get_last_dns_str_returned(tr);
-			if (probe_count == 1 && last_reversed_ip_str) printf(MAGENTA "%s  " RESET, last_reversed_ip_str);
-			if (probe_count == 1 && last_reversed_dns_str && tr->do_reverse_dns)
+			if (probe_count == 1 && last_reversed_ip_str && time_taken == -1.0) printf(MAGENTA "%s  " RESET, last_reversed_ip_str);
+			if (probe_count == 1 && last_reversed_dns_str && tr->do_reverse_dns && time_taken == -1.0)
 			{
 				if (last_reversed_dns_str[0] == '\0') printf (YELLOW "(%s)  " RESET, last_reversed_ip_str);
 				else printf(YELLOW "(%s)  " RESET, last_reversed_dns_str);
