@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/09 11:26:14 by maze              #+#    #+#             */
-/*   Updated: 2026/05/15 15:01:50 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 15:02:21 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,7 +255,6 @@ int main(int argc, char **argv unused)
 	if (resolve_hostname(tr) == EXIT_FAILURE) return (EXIT_FAILURE);
 
 	traceroute_loop(tr);
-	if (0) ping_loop(tr);
 	close(tr->sockfd);
 	free_traceroute(tr);
 	return (0);
