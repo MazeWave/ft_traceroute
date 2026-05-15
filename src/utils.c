@@ -45,30 +45,30 @@ void handle_sigint(int signum unused)
 	return;
 }
 
-void print_echo_reply(t_tr *tr)
-{
-	AUTO_LOG;
+// void print_echo_reply(t_tr *tr)
+// {
+// 	AUTO_LOG;
 
-	if (!tr->replies)
-	{
-		LOG(RED "%s: No replies received yet.\n" RESET, tr->program_name);
-		return;
-	}
-	t_replies *reply = tr->replies;
-	while (reply->next)
-		reply = reply->next;
+// 	if (!tr->replies)
+// 	{
+// 		LOG(RED "%s: No replies received yet.\n" RESET, tr->program_name);
+// 		return;
+// 	}
+// 	t_replies *reply = tr->replies;
+// 	while (reply->next)
+// 		reply = reply->next;
 
-	// if (tr->is_quiet) return ;
-	printf(
-		GREEN "%u bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
-		reply->length,
-		tr->ip_str,
-		reply->reply.sequence_number,
-		reply->reversed_ttl,
-		reply->elapsed_time_in_ms);
+// 	// if (tr->is_quiet) return ;
+// 	printf(
+// 		GREEN "%u bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n" RESET,
+// 		reply->length,
+// 		tr->ip_str,
+// 		reply->reply.sequence_number,
+// 		reply->reversed_ttl,
+// 		reply->elapsed_time_in_ms);
 
-	return;
-}
+// 	return;
+// }
 
 void print_bits(uint32_t n)
 {

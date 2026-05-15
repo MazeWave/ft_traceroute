@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:11:05 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/05/15 14:58:56 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 15:03:21 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ void find_the_ip(t_tr *tr)
 
 	struct addrinfo *temp = tr->addr_info;
 	LOG(BLUE);
-	LOG("--------------------------------");
 	LOG("ai_family: %d", temp->ai_family);
 	LOG("ai_socktype: %d", temp->ai_socktype);
 	LOG("ai_protocol: %d", temp->ai_protocol);
