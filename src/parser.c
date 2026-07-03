@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:11:05 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/05/13 14:30:35 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 15:03:21 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,10 +42,7 @@ void find_the_ip(t_tr *tr)
 	AUTO_LOG;
 
 	struct addrinfo *temp = tr->addr_info;
-	// while (temp)
-	// {
 	LOG(BLUE);
-	LOG("--------------------------------");
 	LOG("ai_family: %d", temp->ai_family);
 	LOG("ai_socktype: %d", temp->ai_socktype);
 	LOG("ai_protocol: %d", temp->ai_protocol);
@@ -54,8 +51,6 @@ void find_the_ip(t_tr *tr)
 	get_sockaddr((struct sockaddr_in *)temp->ai_addr, tr);
 	LOG("ai_canonname: %s", temp->ai_canonname);
 	LOG(RESET);
-	// 	temp = temp->ai_next;
-	// }
 	return;
 }
 
@@ -73,9 +68,12 @@ void help(t_tr *tr)
 		printf("  -q            : Send NUM probe packets per hop (default: 3)\n");
 		printf("  -w            : Wait NUM seconds for response (default: 3)\n");
 		printf("  -f            : Set initial hop distance, i.e., time-to-live\n");
-		printf("  -p            : Use destination PORT port (default: 33434)\n");
-		printf("  -t            : Change TOS (Type of Service) to NUM (default: 0)\n");
 		printf("  -r            : Displayed resolved hostnames (if possible)\n");
+		printf("  -t            : Change TOS (Type of Service) to NUM (default: 0)\n");
+		printf("                : 0		(Best effort)(default)\n");
+		printf("                : 16	(Low delay)\n");
+		printf("                : 40	(Low priority data)\n");
+		printf("                : 184	(VoIP and real-time audio transmission)\n");
 		printf("  -h -?         : Print the help\n");
 		return;
 	case false:
@@ -116,7 +114,6 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 	tr->offset_hop = 0;
 	tr->tos = 0;
 	tr->ip = 0;
-	// tr->count = -1;
 	tr->packet = NULL;
 	tr->packet_len = sizeof(t_icmp_header) + PING_DEFAULT_DATA_LEN;
 	tr->probes_per_hop = 3;
@@ -129,7 +126,6 @@ int parse_args(int argc, char **argv, t_tr *tr)
 {
 	AUTO_LOG;
 	int opt = 0;
-	// static bool has_already_printed_error = false;
 	LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
 	while ((opt = getopt(argc, argv, "-h?rm:q:w:f:t:")) != -1)
 	{
@@ -138,7 +134,6 @@ int parse_args(int argc, char **argv, t_tr *tr)
 		{
 		case 'r':
 			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
-			// if (atoi(optarg) <= 0) return (printf(RED "Error: The TOS must be at least 0\n" RESET), help(tr), tr->exit_status = true);
 			tr->do_reverse_dns = true;
 			LOG(BLUE "resolve hostname: %d" RESET, tr->do_reverse_dns);
 			break;
@@ -171,7 +166,7 @@ int parse_args(int argc, char **argv, t_tr *tr)
 		case 't':
 			if (!tr->is_bonus)
 			return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0) return (printf(RED "Error: The TOS must be at least 0\n" RESET), help(tr), tr->exit_status = true);
+			if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: The TOS must be between 0 and 255\n" RESET), help(tr), tr->exit_status = true);
 			tr->tos = atoi(optarg);
 			LOG(BLUE "tos: %d" RESET, tr->tos);
 			break;
@@ -182,9 +177,6 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			return (help(tr), tr->exit_status = false, EXIT_FAILURE);
 			default:
 			if (tr->hostname == NULL) tr->hostname = optarg;
-			// else if (tr->is_verbose)
-			// 	if (!has_already_printed_error++) printf(RED "Error: Multiple
-			// hostnames provided. Only the first one will be used.\n" RESET);
 			LOG(RED "Used Hostname: %s" RESET, tr->hostname);
 			LOG(RED "Current read Hostname: %s" RESET, optarg);
 			break;

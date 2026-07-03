@@ -6,7 +6,7 @@
 /*   By: ldalmass <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:10:54 by ldalmass          #+#    #+#             */
-/*   Updated: 2026/04/29 14:16:10 by ldalmass         ###   ########.fr       */
+/*   Updated: 2026/05/15 15:14:51 by ldalmass         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,17 +151,14 @@ int create_icmp_socket(t_tr *tr)
 	// Check if the socket was created successfully
 	if (tr->sockfd < 0)
 		return (close(tr->sockfd),
-			printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, tr->program_name, tr->sockfd),
-			EXIT_FAILURE);
+			printf(RED "%s: socket: Failed to create socket.\n sockfd: %d" RESET, tr->program_name, tr->sockfd),EXIT_FAILURE);
 
 	// Set the socket timeout for receiving packets and being non-blocking
 	struct timeval tv;
-	// tv.tv_sec = tr->response_timeout_for_each_probe;
-	// tv.tv_usec = 0;
 	tv.tv_sec = 0;
-	tv.tv_usec = 100000;
+	tv.tv_usec = 100000; // 100 ms
 	uint32_t	final_ttl = tr->ttl + tr->offset_hop;
-	setsockopt(tr->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); // set socket to wait x seconds for a response
+	setsockopt(tr->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); // set socket to wait x seconds/ms for a response
 	setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl)); // set the TTL
 	setsockopt(tr->sockfd, IPPROTO_IP, IP_TOS, &tr->tos, sizeof(tr->tos)); // set the TOS
 	return (EXIT_SUCCESS);
