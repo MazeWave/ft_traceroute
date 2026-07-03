@@ -130,6 +130,8 @@ static void traceroute_loop(t_tr *tr)
 			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
 		}
 
+		did_we_traceroute_to_target(tr); // Sets g_is_running to false if we are at the target
+		
 		// Increment the ttl and hop count
 		tr->ttl++;
 		uint32_t	final_ttl = tr->ttl + tr->offset_hop;
