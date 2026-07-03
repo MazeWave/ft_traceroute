@@ -18,7 +18,7 @@ void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 
 	// char ip_str[INET_ADDRSTRLEN];
 	// inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
-	char *ip_str = inet_ntoa(*(struct in_addr *)ai_addr);
+	char *ip_str = inet_ntoa(ai_addr->sin_addr);
 
 	// set the ip
 	tr->ip = ai_addr->sin_addr.s_addr;
@@ -146,14 +146,15 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			break;
 		case 'q':
 			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
-			tr->probes_per_hop = atof(optarg);
-			LOG(BLUE "probes_per_hop: %f" RESET, tr->interval);
-			if (atof(optarg) < 0) return (printf(RED "Error: At least one proble per hop is requiered\n" RESET),help(tr), tr->exit_status = true);
+			if (atoi(optarg) < 0 || atoi(optarg) > 10) return (printf(RED "Error: Probes count per hop must be between 1 and 10\n" RESET),help(tr), tr->exit_status = true);
+			tr->probes_per_hop = atoi(optarg);
+			LOG(BLUE "probes_per_hop: %f" RESET, tr->probes_per_hop);
 			break;
 		case 'w':
 			if (!tr->is_bonus)
 			return (help(tr), tr->exit_status = true);
 			if (atoi(optarg) <= 0) return (printf(RED "Error: Response time must be at 1 least seconds\n" RESET), help(tr), tr->exit_status = true);
+			if (atoi(optarg) > 60) return (printf(RED "Error: Ridiculous waiting time `%d'\n" RESET, atoi(optarg)), help(tr), tr->exit_status = true);
 			tr->response_timeout_for_each_probe = atoi(optarg);
 			LOG(BLUE "response_time: %d" RESET, tr->response_timeout_for_each_probe);
 			break;

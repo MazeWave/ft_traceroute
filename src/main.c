@@ -21,7 +21,7 @@ static void print_hop_count_formatted(uint8_t n)
 	return ;
 }
 
-static bool did_we_traceroute_to_target(t_tr *tr)
+static bool did_we_traceroute_to_target(t_tr *tr, uint8_t probe_count)
 {
 	AUTO_LOG;
 	t_replies *temp = tr->replies;
@@ -40,8 +40,8 @@ static bool did_we_traceroute_to_target(t_tr *tr)
 	LOG(DEBUG MAGENTA "reply type == 3 -> ICMP_DEST_UNREACH" RESET, temp->reply.type);
 
 	// Actual check
-	if (temp->reply.type == ICMP_ECHOREPLY && tr->ip == temp->reversed_ip) g_is_running = false;
-	return (temp->reply.type == ICMP_ECHOREPLY && tr->ip == temp->reversed_ip);
+	if (temp->reply.type == ICMP_ECHOREPLY && tr->ip == temp->reversed_ip && tr->probes_per_hop == probe_count) g_is_running = false;
+	return (temp->reply.type == ICMP_ECHOREPLY && tr->ip == temp->reversed_ip && tr->probes_per_hop == probe_count);
 }
 
 static char *get_last_ip_str_returned(t_tr *tr)
@@ -85,7 +85,7 @@ static void traceroute_loop(t_tr *tr)
 		{
 			// Increment the probe count (default 3 probes per hops)
 			probe_count++;
-			did_we_traceroute_to_target(tr); // Sets g_is_running to false if we are at the target
+			did_we_traceroute_to_target(tr, probe_count); // Sets g_is_running to false if we are at the target
 
 			// Build the probe
 			build_traceroute_packet(tr);
@@ -130,8 +130,8 @@ static void traceroute_loop(t_tr *tr)
 			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
 		}
 
-		did_we_traceroute_to_target(tr); // Sets g_is_running to false if we are at the target
-		
+		did_we_traceroute_to_target(tr, tr->probes_per_hop); // Sets g_is_running to false if we are at the target
+
 		// Increment the ttl and hop count
 		tr->ttl++;
 		uint32_t	final_ttl = tr->ttl + tr->offset_hop;

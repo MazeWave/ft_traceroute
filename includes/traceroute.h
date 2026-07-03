@@ -143,7 +143,8 @@ int resolve_hostname(t_tr *tr);
 void find_the_ip(t_tr *tr);
 void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr);
 void send_packet(t_tr *tr);
-char *transform_raw_ip_to_string_ip(const unsigned int ip);
+// char *transform_raw_ip_to_string_ip(const unsigned int ip);
+char *transform_raw_ip_to_string_ip(struct in_addr ip);
 
 // icmp_packet.c
 uint16_t calculate_checksum(void *addr, int count);

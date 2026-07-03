@@ -11,18 +11,30 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <netinet/in.h>
 #include <stddef.h>
 #include <stdint.h>
 
-char *transform_raw_ip_to_string_ip(const unsigned int ip)
+// char *transform_raw_ip_to_string_ip(const unsigned int ip)
+// {
+// 	AUTO_LOG;
+
+// 	// char str[INET_ADDRSTRLEN];
+// 	// inet_ntop(AF_INET, &ip, str, INET_ADDRSTRLEN);
+// 	char *ip_str = inet_ntoa(ai_addr->sin_addr);
+	
+
+// 	LOG(DEBUG YELLOW "%s" RESET, str);
+// 	return (strdup(str));
+// }
+
+char *transform_raw_ip_to_string_ip(struct in_addr ip)
 {
 	AUTO_LOG;
 
-	char str[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &ip, str, INET_ADDRSTRLEN);
-
-	LOG(DEBUG YELLOW "%s" RESET, str);
-	return (strdup(str));
+	char *ip_str = inet_ntoa(ip);
+	LOG(DEBUG YELLOW "%s" RESET, ip_str);
+	return (strdup(ip_str));
 }
 
 float deserialize_icmp_packet(t_tr *tr, struct timeval start)
@@ -68,7 +80,8 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	// new_reply_node->offset = 20;
 	new_reply_node->length = tr->packet_len;
 	new_reply_node->reversed_ip = src.sin_addr.s_addr;
-	new_reply_node->reversed_ip_str = transform_raw_ip_to_string_ip(src.sin_addr.s_addr);
+	// new_reply_node->reversed_ip_str = transform_raw_ip_to_string_ip(src.sin_addr.s_addr);
+	new_reply_node->reversed_ip_str = transform_raw_ip_to_string_ip(src.sin_addr);
 
 	// Calculate the elapsed time in seconds
 	struct timeval end;
