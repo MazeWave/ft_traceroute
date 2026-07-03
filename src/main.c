@@ -81,7 +81,7 @@ static void traceroute_loop(t_tr *tr)
 		print_hop_count_formatted(hop_count + 1);
 
 		uint8_t	probe_count = 0;
-		while (probe_count < tr->probes_per_hop)
+		while (probe_count < tr->probes_per_hop && g_is_running)
 		{
 			// Increment the probe count (default 3 probes per hops)
 			probe_count++;
@@ -121,7 +121,7 @@ static void traceroute_loop(t_tr *tr)
 			if (last_reversed_dns_str) free(last_reversed_dns_str);
 			if (time_taken == -1.0) printf("*  ");
 			else printf("%.3""fms  ", time_taken);
-			fflush(stdout);
+			// fflush(stdout);
 			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
 		}
 

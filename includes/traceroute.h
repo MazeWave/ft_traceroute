@@ -21,7 +21,6 @@
 #include <getopt.h>
 
 #include <arpa/inet.h>
-#include <fcntl.h>
 #include <limits.h>
 #include <math.h>
 #include <netdb.h>

@@ -16,8 +16,9 @@ void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 {
 	AUTO_LOG;
 
-	char ip_str[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
+	// char ip_str[INET_ADDRSTRLEN];
+	// inet_ntop(AF_INET, &ai_addr->sin_addr, ip_str, INET_ADDRSTRLEN);
+	char *ip_str = inet_ntoa(*(struct in_addr *)ai_addr);
 
 	// set the ip
 	tr->ip = ai_addr->sin_addr.s_addr;
@@ -174,7 +175,7 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			tr->tos = atoi(optarg);
 			LOG(BLUE "tos: %d" RESET, tr->tos);
 			break;
-		
+
 		case 'h':
 			return (help(tr), tr->exit_status = false, EXIT_FAILURE);
 		case '?':
