@@ -23,7 +23,7 @@ void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 	// set the ip
 	tr->ip = ai_addr->sin_addr.s_addr;
 	if (tr->ip_str)
-	free(tr->ip_str);
+		free(tr->ip_str);
 	tr->ip_str = strndup(ip_str, INET_ADDRSTRLEN);
 	if (!tr->ip_str)
 	{
@@ -64,6 +64,7 @@ void help(t_tr *tr)
 		printf(GREEN "Usage: %s <hostname> [options]\n" RESET, tr->program_name);
 
 		printf("Options:\n");
+		printf("  -i            : Set packet protocol to ICMP\n");
 		printf("  -m            : Set maximal hop count (default: 64)\n");
 		printf("  -q            : Send NUM probe packets per hop (default: 3)\n");
 		printf("  -w            : Wait NUM seconds for response (default: 3)\n");
@@ -90,7 +91,7 @@ void help(t_tr *tr)
 void version(void)
 {
 	AUTO_LOG;
-	LOG(GREEN "ft_traceroute -- ldalmass -- version: 7.7.7" RESET);
+	LOG(GREEN "ft_traceroute -- ldalmass -- version: 2" RESET);
 	return ;
 }
 
@@ -115,7 +116,7 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 	tr->tos = 0;
 	tr->ip = 0;
 	tr->packet = NULL;
-	tr->packet_len = sizeof(t_icmp_header) + PING_DEFAULT_DATA_LEN;
+	tr->packet_len = sizeof(t_udp_header) + PING_DEFAULT_DATA_LEN;
 	tr->probes_per_hop = 3;
 	gettimeofday(&tr->total_time_elapsed, NULL);
 
@@ -127,7 +128,7 @@ int parse_args(int argc, char **argv, t_tr *tr)
 	AUTO_LOG;
 	int opt = 0;
 	LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
-	while ((opt = getopt(argc, argv, "-h?rm:q:w:f:t:")) != -1)
+	while ((opt = getopt(argc, argv, "-h?virm:q:w:f:t:")) != -1)
 	{
 		LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
 		switch (opt)
@@ -171,7 +172,16 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			tr->tos = atoi(optarg);
 			LOG(BLUE "tos: %d" RESET, tr->tos);
 			break;
+		case 'i':
+			if (!tr->is_bonus)
+			return (help(tr), tr->exit_status = true);
+			tr->is_icmp = true;
+			tr->packet_len = sizeof(t_icmp_header) + PING_DEFAULT_DATA_LEN;
+			LOG(BLUE "is_icmp: %d" RESET, tr->is_icmp);
+			break;
 
+		case 'v':
+			return (version(), tr->exit_status = false, EXIT_FAILURE);
 		case 'h':
 			return (help(tr), tr->exit_status = false, EXIT_FAILURE);
 		case '?':

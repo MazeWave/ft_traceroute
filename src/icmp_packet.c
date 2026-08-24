@@ -12,7 +12,7 @@
 
 #include "../includes/traceroute.h"
 
-void build_traceroute_packet(t_tr *tr)
+void build_icmp_packet(t_tr *tr)
 {
 	AUTO_LOG;
 
@@ -20,7 +20,12 @@ void build_traceroute_packet(t_tr *tr)
 	serialize_icmp_packet(tr);
 	if (!tr->packet) return;
 	tr->icmp_packet.checksum = calculate_checksum((uint16_t *)tr->packet, tr->packet_len);
-	*(uint16_t *)&tr->packet[2] = tr->icmp_packet.checksum; // this writes both the packet[2] and packet[3]
+	// *(uint16_t *)&tr->packet[2] = tr->icmp_packet.checksum; // this writes both the packet[2] and packet[3]
+	memcpy(&tr->packet[0], &tr->icmp_packet.type, sizeof(uint8_t));
+	memcpy(&tr->packet[1], &tr->icmp_packet.code, sizeof(uint8_t));
+	memcpy(&tr->packet[2], &tr->icmp_packet.checksum, sizeof(uint16_t));
+	memcpy(&tr->packet[4], &tr->icmp_packet.identifier, sizeof(uint16_t));
+	memcpy(&tr->packet[6], &tr->icmp_packet.sequence_number, sizeof(uint16_t));
 	return;
 }
 
@@ -63,5 +68,30 @@ void init_icmp_header(t_tr *tr)
 	tr->icmp_packet.sequence_number = sequence_number++;
 
 	LOG(GREEN "ICMP header initialized" RESET);
+	return;
+}
+
+void serialize_icmp_packet(t_tr *tr)
+{
+	AUTO_LOG;
+
+	size_t i = 0;
+	uint8_t *buffer = (uint8_t *)&tr->icmp_packet;
+
+	tr->packet = calloc(tr->packet_len, sizeof(uint8_t));
+	if (!tr->packet)
+	{
+		LOG(RED "%s: calloc: Failed to allocate memory for icmp packet.\n" RESET, tr->program_name);
+		g_is_running = false;
+		return;
+	}
+
+	// Serialize icmp header
+	while (i < sizeof(tr->icmp_packet))
+	{
+		tr->packet[i] = *((uint8_t *)buffer);
+		buffer++;
+		i++;
+	}
 	return;
 }

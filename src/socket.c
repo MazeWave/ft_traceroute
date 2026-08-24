@@ -107,31 +107,6 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	return (new_reply_node->elapsed_time_in_ms);
 }
 
-void serialize_icmp_packet(t_tr *tr)
-{
-	AUTO_LOG;
-
-	size_t i = 0;
-	uint8_t *buf = (uint8_t *)&tr->icmp_packet;
-
-	tr->packet = calloc(tr->packet_len, sizeof(uint8_t));
-	if (!tr->packet)
-	{
-		LOG(RED "%s: malloc: Failed to allocate memory for ping packet.\n" RESET, tr->program_name);
-		g_is_running = false;
-		return;
-	}
-
-	// Serialize icmp header
-	while (i < sizeof(tr->icmp_packet))
-	{
-		tr->packet[i] = *((uint8_t *)buf);
-		buf++;
-		i++;
-	}
-	return;
-}
-
 void send_packet(t_tr *tr)
 {
 	AUTO_LOG;

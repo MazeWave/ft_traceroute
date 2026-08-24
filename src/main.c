@@ -88,7 +88,7 @@ static void traceroute_loop(t_tr *tr)
 			did_we_traceroute_to_target(tr, probe_count); // Sets g_is_running to false if we are at the target
 
 			// Build the probe
-			build_traceroute_packet(tr);
+			(tr->is_icmp) ? build_icmp_packet(tr) : build_udp_packet(tr);
 
 			// Send the proble
 			send_packet(tr);
@@ -126,7 +126,7 @@ static void traceroute_loop(t_tr *tr)
 			if (last_reversed_dns_str) free(last_reversed_dns_str);
 			if (time_taken == -1.0) printf(RED "*  " RESET);
 			else printf("%.3""fms  ", time_taken);
-			// fflush(stdout);
+			fflush(stdout);
 			if (probe_count == tr->probes_per_hop) printf("\n"); // New line after the last probe result
 		}
 

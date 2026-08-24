@@ -63,8 +63,6 @@ extern volatile bool g_is_running;
 
 typedef struct s_icmp_header
 {
-	// struct s_echo_header	header;
-
 	// First 32 bits (8 + 8 + 16)
 	uint8_t type;
 	uint8_t code;
@@ -74,6 +72,17 @@ typedef struct s_icmp_header
 	uint16_t identifier;
 	uint16_t sequence_number;
 } t_icmp_header;
+
+typedef struct s_udp_header
+{
+	// First 32 bits (16 + 16)
+	uint16_t source_port;		// Optional in ipv4
+	uint16_t destination_port;
+
+	// Second 32 bits (16 + 16)
+	uint16_t length;			// Minimum is 8 bytes aka 64 bits
+	uint16_t checksum;			// Optional in ipv4
+} t_udp_header;
 
 typedef struct s_replies
 {
@@ -96,6 +105,7 @@ typedef struct s_replies
 typedef struct s_tr
 {
 	struct s_icmp_header icmp_packet;
+	struct s_udp_header udp_packet;
 	struct addrinfo *addr_info;
 	struct s_replies *replies;
 	struct timeval total_time_elapsed;
@@ -117,6 +127,7 @@ typedef struct s_tr
 	int			sockfd;
 	bool		is_bonus;
 	bool		is_root;
+	bool		is_icmp;
 	bool		do_reverse_dns;
 	char		*program_name;
 	char		*hostname;
@@ -150,10 +161,14 @@ char *transform_raw_ip_to_string_ip(struct in_addr ip);
 uint16_t calculate_checksum(void *addr, int count);
 void init_icmp_header(t_tr *tr);
 void read_payload_data_in_packet(t_tr *tr);
-void build_traceroute_packet(t_tr *tr);
+void build_icmp_packet(t_tr *tr);
 void add_payload_to_packet(t_tr *tr);
 void serialize_icmp_packet(t_tr *tr);
 float deserialize_icmp_packet(t_tr *tr, struct timeval start);
+
+// upd_packet.c
+void	build_udp_packet(t_tr *tr);
+void	serialize_udp_packet(t_tr *tr);
 
 // utils.c
 struct timeval get_time();
