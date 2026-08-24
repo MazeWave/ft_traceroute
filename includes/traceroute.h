@@ -124,7 +124,8 @@ typedef struct s_tr
 	uint8_t *packet;
 	size_t packet_len;
 
-	int			sockfd;
+	int			send_sockfd;
+	int			recv_sockfd;
 	bool		is_bonus;
 	bool		is_root;
 	bool		is_icmp;

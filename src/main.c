@@ -135,7 +135,7 @@ static void traceroute_loop(t_tr *tr)
 		// Increment the ttl and hop count
 		tr->ttl++;
 		uint32_t	final_ttl = tr->ttl + tr->offset_hop;
-		setsockopt(tr->sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl));
+		setsockopt(tr->send_sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl));
 		hop_count++;
 		// Check if we surpassed the max_hop count
 		if (tr->ttl > tr->max_hops) g_is_running = false;
@@ -189,7 +189,7 @@ int main(int argc, char **argv unused)
 	if (resolve_hostname(tr) == EXIT_FAILURE) return (EXIT_FAILURE);
 
 	traceroute_loop(tr);
-	close(tr->sockfd);
+	close(tr->send_sockfd);
 	free_traceroute(tr);
 	return (0);
 }
