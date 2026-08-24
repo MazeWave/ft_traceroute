@@ -14,27 +14,27 @@
 #include <netinet/in.h>
 #include <stdint.h>
 
-void	build_udp_packet(t_tr *tr)
-{
-	AUTO_LOG;
+// void	build_udp_packet(t_tr *tr)
+// {
+// 	AUTO_LOG;
 
-	tr->udp_packet.source_port = htons(0);
-	tr->udp_packet.destination_port = htons(0);
-	tr->udp_packet.length = htons(8);
-	LOG(GREEN "UDP header initialized" RESET);
-	serialize_udp_packet(tr);
-	if (!tr->packet) return;
-	tr->udp_packet.checksum = calculate_checksum((uint16_t *)tr->packet, tr->packet_len);
-	LOG(GREEN "UDP checksum calculated" RESET);
-	LOG(BLUE "Filling UDP packet..." RESET);
-	memcpy(&tr->packet[0], &tr->udp_packet.source_port, sizeof(uint16_t));
-	memcpy(&tr->packet[2], &tr->udp_packet.destination_port, sizeof(uint16_t));
-	memcpy(&tr->packet[4], &tr->udp_packet.length, sizeof(uint16_t));
-	memcpy(&tr->packet[6], &tr->udp_packet.checksum, sizeof(uint16_t));
-	LOG(GREEN "UDP packet filled" RESET);
+// 	tr->udp_packet.source_port = htons(0);
+// 	tr->udp_packet.destination_port = htons(0);
+// 	tr->udp_packet.length = htons(8);
+// 	LOG(GREEN "UDP header initialized" RESET);
+// 	serialize_udp_packet(tr);
+// 	if (!tr->packet) return;
+// 	tr->udp_packet.checksum = calculate_checksum((uint16_t *)tr->packet, tr->packet_len);
+// 	LOG(GREEN "UDP checksum calculated" RESET);
+// 	LOG(BLUE "Filling UDP packet..." RESET);
+// 	memcpy(&tr->packet[0], &tr->udp_packet.source_port, sizeof(uint16_t));
+// 	memcpy(&tr->packet[2], &tr->udp_packet.destination_port, sizeof(uint16_t));
+// 	memcpy(&tr->packet[4], &tr->udp_packet.length, sizeof(uint16_t));
+// 	memcpy(&tr->packet[6], &tr->udp_packet.checksum, sizeof(uint16_t));
+// 	LOG(GREEN "UDP packet filled" RESET);
 
-	return ;
-}
+// 	return ;
+// }
 
 void serialize_udp_packet(t_tr *tr)
 {
@@ -83,7 +83,7 @@ float deserialize_udp_packet(t_tr *tr, struct timeval start)
 	struct sockaddr_in	src;
 	socklen_t			src_len = sizeof(src);
 	// if (recv(tr->sockfd, buffer, buffer_size, 0) < 0)
-	if (recvfrom(tr->send_sockfd, buffer, buffer_size, 0, (struct sockaddr *)&src, &src_len) < 0)
+	if (recvfrom(tr->recv_sockfd, buffer, buffer_size, 0, (struct sockaddr *)&src, &src_len) < 0)
 	{
 		free(buffer);
 		LOG(RED "%s: recvfrom: Failed to receive ICMP packet.\n" RESET, tr->program_name);

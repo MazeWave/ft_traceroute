@@ -88,7 +88,8 @@ static void traceroute_loop(t_tr *tr)
 			did_we_traceroute_to_target(tr, probe_count); // Sets g_is_running to false if we are at the target
 
 			// Build the probe
-			(tr->is_icmp) ? build_icmp_packet(tr) : build_udp_packet(tr);
+			// (tr->is_icmp) ? build_icmp_packet(tr) : build_udp_packet(tr);
+			if (tr->is_icmp) build_icmp_packet(tr);
 
 			// Send the proble
 			send_packet(tr);
@@ -148,13 +149,7 @@ static void free_traceroute(t_tr *tr unused)
 	AUTO_LOG;
 
 	// Free the addrinfo linked list
-	struct addrinfo *addr = tr->addr_info;
-	while (addr)
-	{
-		struct addrinfo *next = addr->ai_next;
-		free(addr);
-		addr = next;
-	}
+	freeaddrinfo(tr->addr_info);
 
 	// Free the echo replies linked list
 	t_replies *echo_reply = tr->replies;
@@ -166,8 +161,12 @@ static void free_traceroute(t_tr *tr unused)
 		echo_reply = next;
 	}
 
-	// Free the ip_str
+	// Free other small things
 	if (tr->ip_str) free(tr->ip_str);
+
+	// Closes the sockets
+	if (tr->recv_sockfd >= 0) {close(tr->recv_sockfd); tr->recv_sockfd = -1;}
+	if (tr->send_sockfd >= 0) {close(tr->send_sockfd); tr->send_sockfd = -1;}
 	return;
 }
 
@@ -185,11 +184,13 @@ int main(int argc, char **argv unused)
 	signal(SIGQUIT, &handle_sigint);
 
 	if (parse_args(argc, argv, tr) == EXIT_FAILURE) return (tr->exit_status);
-	if (create_icmp_socket(tr) == EXIT_FAILURE) return (EXIT_FAILURE);
-	if (resolve_hostname(tr) == EXIT_FAILURE) return (EXIT_FAILURE);
+
+	
+
+	if (create_recv_socket(tr) || create_send_socket(tr) || resolve_hostname(tr))
+		return (free_traceroute(tr), EXIT_FAILURE);
 
 	traceroute_loop(tr);
-	close(tr->send_sockfd);
 	free_traceroute(tr);
 	return (0);
 }

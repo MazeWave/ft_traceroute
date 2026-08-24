@@ -58,6 +58,7 @@
 
 #define PING_DEFAULT_DATA_LEN 56
 #define NI_MAXHOST 1025
+#define DEFAULT_SEND_PORT 33434
 
 extern volatile bool g_is_running;
 
@@ -150,7 +151,9 @@ void help(t_tr *tr);
 void init_traceroute_struct(t_tr *tr, char **argv);
 
 // socket.c
-int create_icmp_socket(t_tr *tr);
+int create_recv_socket(t_tr *tr);
+int create_send_socket(t_tr *tr);
+
 int resolve_hostname(t_tr *tr);
 void find_the_ip(t_tr *tr);
 void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr);

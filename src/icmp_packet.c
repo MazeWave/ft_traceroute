@@ -117,7 +117,7 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	struct sockaddr_in	src;
 	socklen_t			src_len = sizeof(src);
 	// if (recv(tr->sockfd, buffer, buffer_size, 0) < 0)
-	if (recvfrom(tr->send_sockfd, buffer, buffer_size, 0, (struct sockaddr *)&src, &src_len) < 0)
+	if (recvfrom(tr->recv_sockfd, buffer, buffer_size, 0, (struct sockaddr *)&src, &src_len) < 0)
 	{
 		free(buffer);
 		LOG(RED "%s: recvfrom: Failed to receive ICMP packet.\n" RESET, tr->program_name);

@@ -102,6 +102,7 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 	tr->program_name = argv[0];
 	tr->is_bonus = (strstr(argv[0], "_bonus") == NULL) ? false : true;
 	tr->is_root = (getuid() == 0);
+	tr->is_icmp = false;
 	tr->exit_status = false;
 	tr->do_reverse_dns = false;
 	tr->hostname = NULL;
@@ -115,6 +116,8 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 	tr->offset_hop = 0;
 	tr->tos = 0;
 	tr->ip = 0;
+	tr->send_sockfd = -1;
+	tr->recv_sockfd = -1;
 	tr->packet = NULL;
 	tr->packet_len = sizeof(t_udp_header) + PING_DEFAULT_DATA_LEN;
 	tr->probes_per_hop = 3;
@@ -127,10 +130,10 @@ int parse_args(int argc, char **argv, t_tr *tr)
 {
 	AUTO_LOG;
 	int opt = 0;
-	LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
+	LOG(DEBUG BLUE "optind: %d, argc: %d" RESET, optind, argc);
 	while ((opt = getopt(argc, argv, "-h?virm:q:w:f:t:")) != -1)
 	{
-		LOG(DEBUG RED "optind: %d, argc: %d" RESET, optind, argc);
+		LOG(DEBUG BLUE "optind: %d, argc: %d" RESET, optind, argc);
 		switch (opt)
 		{
 		case 'r':
@@ -188,8 +191,8 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			return (help(tr), tr->exit_status = false, EXIT_FAILURE);
 			default:
 			if (tr->hostname == NULL) tr->hostname = optarg;
-			LOG(RED "Used Hostname: %s" RESET, tr->hostname);
-			LOG(RED "Current read Hostname: %s" RESET, optarg);
+			LOG(BLUE "Used Hostname: %s" RESET, tr->hostname);
+			LOG(BLUE "Current read Hostname: %s" RESET, optarg);
 			break;
 		}
 	}
