@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <netinet/ip_icmp.h>
+#include <stdlib.h>
 
 volatile bool g_is_running = true;
 
@@ -25,23 +27,30 @@ static bool did_we_traceroute_to_target(t_tr *tr, uint8_t probe_count)
 {
 	AUTO_LOG;
 	t_replies *temp = tr->replies;
+	bool arrived = false;
 
-	// Get last response node
 	if (!temp) return false;
+	// Get last response node
 	while(temp->next) temp = temp->next;
 
 	LOG(DEBUG MAGENTA "target string = %s" RESET, tr->hostname);
 	LOG(DEBUG MAGENTA "reversed dns string = %s" RESET, temp->reversed_dns_str);
 	LOG(DEBUG MAGENTA "target IP = %u" RESET, tr->ip);
 	LOG(DEBUG MAGENTA "reversed IP = %u" RESET, temp->reversed_ip);
-	LOG(DEBUG MAGENTA "icmp reply type : %d" RESET, temp->reply.type);
-	LOG(DEBUG MAGENTA "reply type == 0 -> ICMP_ECHOREPLY" RESET, temp->reply.type);
-	LOG(DEBUG MAGENTA "reply type == 11 -> ICMP_TIME_EXCEEDED" RESET, temp->reply.type);
-	LOG(DEBUG MAGENTA "reply type == 3 -> ICMP_DEST_UNREACH" RESET, temp->reply.type);
+	LOG(DEBUG MAGENTA "icmp reply type : %d\n" RESET, temp->reply.type);
+	LOG(DEBUG MAGENTA "reply type == 0 -> ICMP_ECHOREPLY\n" RESET);
+	LOG(DEBUG MAGENTA "reply type == 11 -> ICMP_TIME_EXCEEDED\n" RESET);
+	LOG(DEBUG MAGENTA "reply type == 3 -> ICMP_DEST_UNREACH\n" RESET);
+	LOG(DEBUG MAGENTA "icmp reply code : %d\n" RESET, temp->reply.code);
+	LOG(DEBUG MAGENTA "reply code == 3 -> ICMP_DEST_UNREACH\n" RESET);
 
 	// Actual check
-	if (temp->reply.type == ICMP_ECHOREPLY && tr->ip == temp->reversed_ip && tr->probes_per_hop == probe_count) g_is_running = false;
-	return (temp->reply.type == ICMP_ECHOREPLY && tr->ip == temp->reversed_ip && tr->probes_per_hop == probe_count);
+	if (tr->is_icmp) arrived = (temp->reply.type == ICMP_ECHOREPLY);
+	else arrived = (temp->reply.type == ICMP_DEST_UNREACH && temp->reply.code == ICMP_PORT_UNREACH);
+	arrived = arrived && tr->ip == temp->reversed_ip && tr->probes_per_hop == probe_count;
+	LOG(DEBUG "\tdid we traceroute ? " BG_RED"%d\n" RESET, arrived);
+	if (arrived) g_is_running = false;
+	return (arrived);
 }
 
 static char *get_last_ip_str_returned(t_tr *tr)
@@ -72,8 +81,10 @@ static void traceroute_loop(t_tr *tr)
 	LOG(MAGENTA "probes_per_hop = %d" RESET, tr->probes_per_hop);
 	LOG(MAGENTA "offset_hop = %d" RESET, tr->offset_hop);
 	LOG(MAGENTA "response_time = %d" RESET, tr->response_timeout_for_each_probe);
-	LOG(MAGENTA "port = %d" RESET, tr->tos);
+	LOG(MAGENTA "port = %d" RESET, tr->port);
+	LOG(MAGENTA "tos = %d" RESET, tr->tos);
 
+	(tr->is_icmp) ? printf(BG_BLUE " ICMP " RESET " ") : printf(BG_BLUE " UDP " RESET " ");
 	printf(GREEN "traceroute to %s (%s), %d hops max\n" RESET, tr->hostname, tr->ip_str, tr->max_hops);
 	uint8_t	hop_count = 0;
 	while (g_is_running)
@@ -88,8 +99,7 @@ static void traceroute_loop(t_tr *tr)
 			did_we_traceroute_to_target(tr, probe_count); // Sets g_is_running to false if we are at the target
 
 			// Build the probe
-			// (tr->is_icmp) ? build_icmp_packet(tr) : build_udp_packet(tr);
-			if (tr->is_icmp) build_icmp_packet(tr);
+			(tr->is_icmp) ? build_icmp_packet(tr) : build_udp_packet(tr);
 
 			// Send the proble
 			send_packet(tr);
@@ -136,7 +146,12 @@ static void traceroute_loop(t_tr *tr)
 		// Increment the ttl and hop count
 		tr->ttl++;
 		uint32_t	final_ttl = tr->ttl + tr->offset_hop;
-		setsockopt(tr->send_sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl));
+		if (setsockopt(tr->send_sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl)) < 0)
+		{
+			printf(RED "%s: sockopt: Failed to set TTL time for send socket.\n" RESET, tr->program_name);
+			print_errno();
+			return ;
+		}
 		hop_count++;
 		// Check if we surpassed the max_hop count
 		if (tr->ttl > tr->max_hops) g_is_running = false;
@@ -183,10 +198,7 @@ int main(int argc, char **argv unused)
 	signal(SIGINT, &handle_sigint);
 	signal(SIGQUIT, &handle_sigint);
 
-	if (parse_args(argc, argv, tr) == EXIT_FAILURE) return (tr->exit_status);
-
-	
-
+	if (parse_args(argc, argv, tr) == EXIT_FAILURE) return (EXIT_FAILURE);
 	if (create_recv_socket(tr) || create_send_socket(tr) || resolve_hostname(tr))
 		return (free_traceroute(tr), EXIT_FAILURE);
 

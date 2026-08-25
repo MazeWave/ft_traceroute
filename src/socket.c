@@ -11,11 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <netinet/in.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <sys/socket.h>
 
 // char *transform_raw_ip_to_string_ip(const unsigned int ip)
 // {
@@ -43,21 +38,26 @@ void send_packet(t_tr *tr)
 {
 	AUTO_LOG;
 
-	if (sendto(tr->send_sockfd, tr->packet, tr->packet_len, 0, tr->addr_info->ai_addr, tr->addr_info->ai_addrlen) <= 0)
+	static uint16_t increment = 0;
+
+	// sets the destination port for our UDP packet
+	((struct sockaddr_in *)tr->addr_info->ai_addr)->sin_port = htons(tr->port + increment);
+	if (sendto(tr->send_sockfd, tr->packet, tr->packet_len, 0, tr->addr_info->ai_addr, tr->addr_info->ai_addrlen) < 0)
 	{
 		printf(RED "%s: sendto: Failed to send ping packet.\n" RESET, tr->program_name);
+		print_errno();
 		g_is_running = false;
 	}
 
 	free(tr->packet);
 	tr->packet = NULL;
+	increment++;
 	return;
 }
 
 int create_recv_socket(t_tr *tr)
 {
 	AUTO_LOG;
-
 
 	// Our listening socket must use ICMP, thus have root perms
 	if (tr->is_root) tr->recv_sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
@@ -71,7 +71,8 @@ int create_recv_socket(t_tr *tr)
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = 100000; // 100 ms
-	setsockopt(tr->recv_sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); // set socket to wait x seconds/ms for a response
+	if (setsockopt(tr->recv_sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) // set socket to wait x seconds/ms for a response
+		return (printf(RED "%s: sockopt: Failed to set timeout time for recv socket.\n" RESET, tr->program_name), EXIT_FAILURE);
 
 	return (EXIT_SUCCESS);
 }
@@ -90,8 +91,11 @@ int create_send_socket(t_tr *tr)
 
 	// Set the TTL and TOS
 	uint32_t	final_ttl = tr->ttl + tr->offset_hop;
-	setsockopt(tr->send_sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl)); // set the TTL
-	setsockopt(tr->send_sockfd, IPPROTO_IP, IP_TOS, &tr->tos, sizeof(tr->tos)); // set the TOS	
+	if (setsockopt(tr->send_sockfd, IPPROTO_IP, IP_TTL, &final_ttl, sizeof(final_ttl)) < 0)
+		return (printf(RED "%s: sockopt: Failed to set TTL for send socket.\n" RESET, tr->program_name), EXIT_FAILURE);
+	if (setsockopt(tr->send_sockfd, IPPROTO_IP, IP_TOS, &tr->tos, sizeof(tr->tos)) < 0)
+		return (printf(RED "%s: sockopt: Failed to set TOS time for send socket.\n" RESET, tr->program_name), EXIT_FAILURE);
+		
 	return (EXIT_SUCCESS);
 }
 
@@ -110,6 +114,7 @@ int resolve_hostname(t_tr *tr)
 	if (getaddrinfo(tr->hostname, NULL, &hints, &res) != 0)
 	{
 		printf(RED "%s: getaddrinfo: Failed to resolve hostname." RESET, tr->program_name);
+		print_errno();
 		return (EXIT_FAILURE);
 	}
 	tr->addr_info = res;

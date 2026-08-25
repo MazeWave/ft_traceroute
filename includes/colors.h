@@ -21,8 +21,19 @@
 #define MAGENTA "\033[0;35m"
 #define CYAN "\033[0;36m"
 
-#define INFO "\033[0;34m[INFO]\033[0m  "
-#define DEBUG "\033[0;33m[DEBUG]\033[0m "
-#define ERROR "\033[0;31m[ERROR]\033[0m "
+#define BG_BLACK "\033[40m"
+#define BG_RED "\033[41m"
+#define BG_GREEN "\033[42m"
+#define BG_YELLOW "\033[43m"
+#define BG_BLUE "\033[44m"
+#define BG_MAGENTA "\033[45m"
+#define BG_CYAN "\033[46m"
+#define BG_WHITE "\033[47m"
+
+#define INFO BG_BLUE "\033[30m INFO " RESET
+#define DEBUG BG_YELLOW "\033[30m DEBUG " RESET
+#define ERROR BG_RED "\033[30m ERROR " RESET
+#define PASSES BG_GREEN "\033[30m PASSES " RESET
+#define FAILED BG_RED "\033[30m FAILED " RESET
 
 #endif

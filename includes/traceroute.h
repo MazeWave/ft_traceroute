@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include <getopt.h>
 
@@ -141,6 +142,7 @@ typedef struct s_tr
 	uint32_t	max_hops;
 	uint32_t	offset_hop;
 	uint32_t	probes_per_hop;
+	uint16_t	port;
 	int			response_timeout_for_each_probe;
 	float		interval;
 } t_tr;
@@ -172,10 +174,10 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start);
 
 // upd_packet.c
 void	build_udp_packet(t_tr *tr);
-void	serialize_udp_packet(t_tr *tr);
 
 // utils.c
 struct timeval get_time();
 bool did_we_timeout(struct timeval start, t_tr *tr);
 bool did_we_exceed_in_seconds(struct timeval start, uint32_t seconds);
 void handle_sigint(int signum unused);
+void print_errno(void);

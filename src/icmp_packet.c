@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <asm-generic/errno-base.h>
+#include <asm-generic/errno.h>
 
 void build_icmp_packet(t_tr *tr)
 {
@@ -120,7 +122,12 @@ float deserialize_icmp_packet(t_tr *tr, struct timeval start)
 	if (recvfrom(tr->recv_sockfd, buffer, buffer_size, 0, (struct sockaddr *)&src, &src_len) < 0)
 	{
 		free(buffer);
-		LOG(RED "%s: recvfrom: Failed to receive ICMP packet.\n" RESET, tr->program_name);
+		LOG(RED "%s: recvfrom: Failed to receive ICMP packet." RESET, tr->program_name);
+		if (errno == EAGAIN || errno ==  EWOULDBLOCK)
+			LOG(YELLOW "recv socket timeout, did not receive response within target response time." RESET);
+		else if (errno == EINTR)
+			LOG(YELLOW "CTRL+C interrupt detected." RESET);
+		else print_errno();
 		return (-1.0);
 	}
 

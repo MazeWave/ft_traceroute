@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
+#include <bits/getopt_core.h>
+#include <stdlib.h>
 
 void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 {
@@ -70,6 +72,7 @@ void help(t_tr *tr)
 		printf("  -w            : Wait NUM seconds for response (default: 3)\n");
 		printf("  -f            : Set initial hop distance, i.e., time-to-live\n");
 		printf("  -r            : Displayed resolved hostnames (if possible)\n");
+		printf("  -p            : Change the destination port (default: 33434)\n");
 		printf("  -t            : Change TOS (Type of Service) to NUM (default: 0)\n");
 		printf("                : 0		(Best effort)(default)\n");
 		printf("                : 16	(Low delay)\n");
@@ -116,6 +119,7 @@ void init_traceroute_struct(t_tr *tr, char **argv)
 	tr->offset_hop = 0;
 	tr->tos = 0;
 	tr->ip = 0;
+	tr->port = DEFAULT_SEND_PORT;
 	tr->send_sockfd = -1;
 	tr->recv_sockfd = -1;
 	tr->packet = NULL;
@@ -131,56 +135,63 @@ int parse_args(int argc, char **argv, t_tr *tr)
 	AUTO_LOG;
 	int opt = 0;
 	LOG(DEBUG BLUE "optind: %d, argc: %d" RESET, optind, argc);
-	while ((opt = getopt(argc, argv, "-h?virm:q:w:f:t:")) != -1)
+	while ((opt = getopt(argc, argv, "-h?virm:q:w:f:t:p:")) != -1)
 	{
 		LOG(DEBUG BLUE "optind: %d, argc: %d" RESET, optind, argc);
 		switch (opt)
 		{
 		case 'r':
-			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
+			if (!tr->is_bonus) return (help(tr), EXIT_FAILURE);
 			tr->do_reverse_dns = true;
 			LOG(BLUE "resolve hostname: %d" RESET, tr->do_reverse_dns);
 			break;
 		case 'm':
-			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
+			if (!tr->is_bonus) return (help(tr), EXIT_FAILURE);
 			tr->max_hops = atoi(optarg);
 			LOG(BLUE "max_hops: %d" RESET, tr->max_hops);
-			if (tr->max_hops <= 0) return (printf(RED "Error: Max hop must be greater than 0\n" RESET),
-			help(tr), tr->exit_status = true);
+			if (tr->max_hops <= 0 && tr->max_hops > 99) return (printf(RED "Error: Max hop must be between 1 and 99\n" RESET),
+			help(tr), EXIT_FAILURE);
 			break;
 		case 'q':
-			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) < 0 || atoi(optarg) > 10) return (printf(RED "Error: Probes count per hop must be between 1 and 10\n" RESET),help(tr), tr->exit_status = true);
+			if (!tr->is_bonus) return (help(tr), EXIT_FAILURE);
+			if (atoi(optarg) < 0 || atoi(optarg) > 10) return (printf(RED "Error: Probes count per hop must be between 1 and 10\n" RESET),help(tr), EXIT_FAILURE);
 			tr->probes_per_hop = atoi(optarg);
 			LOG(BLUE "probes_per_hop: %f" RESET, tr->probes_per_hop);
 			break;
 		case 'w':
 			if (!tr->is_bonus)
-			return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0) return (printf(RED "Error: Response time must be at 1 least seconds\n" RESET), help(tr), tr->exit_status = true);
-			if (atoi(optarg) > 60) return (printf(RED "Error: Ridiculous waiting time `%d'\n" RESET, atoi(optarg)), help(tr), tr->exit_status = true);
+			return (help(tr), EXIT_FAILURE);
+			if (atoi(optarg) <= 0) return (printf(RED "Error: Response time must be at 1 least seconds\n" RESET), help(tr), EXIT_FAILURE);
+			if (atoi(optarg) > 60) return (printf(RED "Error: Ridiculous waiting time `%d'\n" RESET, atoi(optarg)), help(tr), EXIT_FAILURE);
 			tr->response_timeout_for_each_probe = atoi(optarg);
 			LOG(BLUE "response_time: %d" RESET, tr->response_timeout_for_each_probe);
 			break;
 		case 'f':
-			if (!tr->is_bonus) return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0) return (printf(RED "Error: The initial hop distance must be at least 1\n" RESET), help(tr), tr->exit_status = true);
+			if (!tr->is_bonus) return (help(tr), EXIT_FAILURE);
+			if (atoi(optarg) <= 0) return (printf(RED "Error: The initial hop distance must be at least 1\n" RESET), help(tr), EXIT_FAILURE);
 			tr->offset_hop = atoi(optarg);
 			LOG(BLUE "offset_hop: %d" RESET, tr->offset_hop);
 			break;
 		case 't':
 			if (!tr->is_bonus)
-			return (help(tr), tr->exit_status = true);
-			if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: The TOS must be between 0 and 255\n" RESET), help(tr), tr->exit_status = true);
+			return (help(tr), EXIT_FAILURE);
+			if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: The TOS must be between 0 and 255\n" RESET), help(tr), EXIT_FAILURE);
 			tr->tos = atoi(optarg);
 			LOG(BLUE "tos: %d" RESET, tr->tos);
 			break;
 		case 'i':
 			if (!tr->is_bonus)
-			return (help(tr), tr->exit_status = true);
+			return (help(tr), EXIT_FAILURE);
 			tr->is_icmp = true;
 			tr->packet_len = sizeof(t_icmp_header) + PING_DEFAULT_DATA_LEN;
 			LOG(BLUE "is_icmp: %d" RESET, tr->is_icmp);
+			break;
+		case 'p':
+			if (!tr->is_bonus)
+			return (help(tr), EXIT_FAILURE);
+			if (atoi(optarg) < 1 || atoi(optarg) > 65535) return (printf(RED "Error: The port must be between 1 and 65535\n" RESET), help(tr), EXIT_FAILURE);
+			tr->port = atoi(optarg);
+			LOG(BLUE "port: %d" RESET, tr->port);
 			break;
 
 		case 'v':
@@ -196,5 +207,10 @@ int parse_args(int argc, char **argv, t_tr *tr)
 			break;
 		}
 	}
+
+	// Port validation maths
+	int max_port = (tr->port + (tr->max_hops * tr->probes_per_hop) - 1); 
+	if (max_port > 65535)
+		return (printf(RED "Error: the port must not exceed 65535 when hopping for %d times, each hop increment the port's value" RESET, max_port), EXIT_FAILURE);
 	return (EXIT_SUCCESS);
 }
