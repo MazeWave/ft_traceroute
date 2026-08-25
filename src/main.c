@@ -84,7 +84,7 @@ static void traceroute_loop(t_tr *tr)
 	LOG(MAGENTA "port = %d" RESET, tr->port);
 	LOG(MAGENTA "tos = %d" RESET, tr->tos);
 
-	(tr->is_icmp) ? printf(BG_BLUE " ICMP " RESET " ") : printf(BG_BLUE " UDP " RESET " ");
+	(tr->is_icmp) ? LOG(BG_BLUE " ICMP " RESET " ") : LOG(BG_BLUE " UDP " RESET " ");
 	printf(GREEN "traceroute to %s (%s), %d hops max\n" RESET, tr->hostname, tr->ip_str, tr->max_hops);
 	uint8_t	hop_count = 0;
 	while (g_is_running)
