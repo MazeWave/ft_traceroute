@@ -70,7 +70,7 @@ void help(t_tr *tr)
 		printf("  -w            : Wait NUM seconds for response (default: 3)\n");
 		printf("  -f            : Set initial hop distance, i.e., time-to-live\n");
 		printf("  -r            : Displayed resolved hostnames (if possible)\n");
-		printf("  -p            : Change the destination port (default: 33434)\n");
+		printf("  -p            : Change the destination port (default: 33434)(not compatible with ICMP)\n");
 		printf("  -t            : Change TOS (Type of Service) to NUM (default: 0)\n");
 		printf("                : 0		(0x00)	(Best effort)(default)\n");
 		printf("                : 16	(0x10)	(Low delay)\n");
