@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <asm-generic/errno-base.h>
-#include <asm-generic/errno.h>
 
 void build_icmp_packet(t_tr *tr)
 {

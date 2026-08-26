@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <bits/types/error_t.h>
 
 struct timeval get_time()
 {

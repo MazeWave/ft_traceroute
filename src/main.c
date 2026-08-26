@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <netinet/ip_icmp.h>
-#include <stdlib.h>
 
 volatile bool g_is_running = true;
 

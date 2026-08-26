@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <bits/getopt_core.h>
-#include <stdlib.h>
 
 void get_sockaddr(struct sockaddr_in *ai_addr, t_tr *tr)
 {
@@ -74,10 +72,10 @@ void help(t_tr *tr)
 		printf("  -r            : Displayed resolved hostnames (if possible)\n");
 		printf("  -p            : Change the destination port (default: 33434)\n");
 		printf("  -t            : Change TOS (Type of Service) to NUM (default: 0)\n");
-		printf("                : 0		(Best effort)(default)\n");
-		printf("                : 16	(Low delay)\n");
-		printf("                : 40	(Low priority data)\n");
-		printf("                : 184	(VoIP and real-time audio transmission)\n");
+		printf("                : 0		(0x00)	(Best effort)(default)\n");
+		printf("                : 16	(0x10)	(Low delay)\n");
+		printf("                : 40	(0x28)	(Low priority data)\n");
+		printf("                : 184	(0xB8)	(VoIP and real-time audio transmission)\n");
 		printf("  -h -?         : Print the help\n");
 		return;
 	case false:
@@ -169,13 +167,13 @@ int parse_args(int argc, char **argv, t_tr *tr)
 		case 'f':
 			if (!tr->is_bonus) return (help(tr), EXIT_FAILURE);
 			if (atoi(optarg) <= 0) return (printf(RED "Error: The initial hop distance must be at least 1\n" RESET), help(tr), EXIT_FAILURE);
-			tr->offset_hop = atoi(optarg);
+			tr->offset_hop = atoi(optarg) - 1;
 			LOG(BLUE "offset_hop: %d" RESET, tr->offset_hop);
 			break;
 		case 't':
 			if (!tr->is_bonus)
 			return (help(tr), EXIT_FAILURE);
-			if (atoi(optarg) <= 0 || atoi(optarg) > 255) return (printf(RED "Error: The TOS must be between 0 and 255\n" RESET), help(tr), EXIT_FAILURE);
+			if (atoi(optarg) < 0 || atoi(optarg) > 255) return (printf(RED "Error: The TOS must be between 0 and 255\n" RESET), help(tr), EXIT_FAILURE);
 			tr->tos = atoi(optarg);
 			LOG(BLUE "tos: %d" RESET, tr->tos);
 			break;

@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/traceroute.h"
-#include <stdint.h>
 
 void	build_udp_packet(t_tr *tr)
 {
